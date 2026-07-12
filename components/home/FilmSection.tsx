@@ -7,6 +7,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrubEngine, type EngineStats } from '@/lib/scrubEngine';
 import { FallbackEngine } from '@/lib/fallbackEngine';
 import { LAST_FRAME, STOP_FRAMES, frameFromScroll } from '@/lib/timeline';
@@ -14,6 +16,8 @@ import { FILM_1080_URL, FILM_720_URL } from '@/lib/filmSources';
 import Gate from './Gate';
 import Overlays, { updateOverlays } from './Overlays';
 import ProfChip from './ProfChip';
+
+gsap.registerPlugin(ScrollTrigger);
 
 type Engine = ScrubEngine | FallbackEngine;
 
@@ -45,6 +49,29 @@ export default function FilmSection() {
       setFilmVh(FILM_VH_MOBILE);
     }
   }, []);
+
+  // KRİTİK: Film 800vh→560vh'e inince ALT BÖLÜMLER ~2000px yukarı kayar.
+  // Craft/Process/CTA/Footer ScrollTrigger'ları konumlarını eski yerleşime göre
+  // hesapladıysa tetik noktaları sayfa sonunun altında kalır ve reveal içerikleri
+  // (opacity 0) sonsuza dek görünmez kalır. Yeni yükseklik DOM'a uygulandıktan
+  // sonra tüm tetikleyici konumları güvenli biçimde yeniden hesaplanır.
+  useEffect(() => {
+    if (filmVh === FILM_VH_DESKTOP) return;
+    let raf1 = 0;
+    let raf2 = 0;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => ScrollTrigger.refresh());
+    });
+    // rAF kısıtlanırsa (arka plan sekmesi vb.) zamanlayıcı yedeği
+    const t = setTimeout(() => ScrollTrigger.refresh(), 500);
+    // Font yüklemesi satır sarmalarını değiştirebilir — bir kez daha tazele
+    document.fonts?.ready.then(() => ScrollTrigger.refresh()).catch(() => {});
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      clearTimeout(t);
+    };
+  }, [filmVh]);
 
   useEffect(() => {
     const section = sectionRef.current!;
