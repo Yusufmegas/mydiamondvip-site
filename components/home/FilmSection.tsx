@@ -17,7 +17,11 @@ import ProfChip from './ProfChip';
 
 type Engine = ScrubEngine | FallbackEngine;
 
-const FILM_VH = 800;      // bölüm yüksekliği — sahne temposu buradan kontrol edilir
+// Bölüm yüksekliği — sahne temposu buradan kontrol edilir. Mobilde scroll
+// mesafesi kısalır (overlay kare zamanlamaları DEĞİŞMEZ; playhead bölüm-göreli
+// orana eşlendiği için yalnızca parmak yolu kısalır).
+const FILM_VH_DESKTOP = 800;
+const FILM_VH_MOBILE = 560;
 const SNAP_IDLE_MS = 280;
 const SNAP_RADIUS = 70;
 
@@ -29,7 +33,18 @@ export default function FilmSection() {
   const [gate, setGate] = useState({ progress: 0, open: false });
   const [prof, setProf] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const [filmVh, setFilmVh] = useState(FILM_VH_DESKTOP);
   const statsRef = useRef<EngineStats | null>(null);
+
+  // Mobil scroll mesafesi: SSR 800vh ile eşleşir, client'ta coarse cihazda 560vh'e iner
+  useEffect(() => {
+    if (
+      window.matchMedia('(pointer: coarse)').matches ||
+      window.matchMedia('(max-width: 900px)').matches
+    ) {
+      setFilmVh(FILM_VH_MOBILE);
+    }
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current!;
@@ -51,13 +66,30 @@ export default function FilmSection() {
       return;
     }
 
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    // Cihaz profili: dokunmatik/coarse cihazlarda Lenis yok, DPR düşük, mobil decode profili
+    const isCoarse =
+      window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 900px)').matches;
+    const isPhone = window.matchMedia('(max-width: 700px)').matches;
+    // Canvas DPR: telefon 1 · tablet ≤1.25 · masaüstü ≤2 (mevcut davranış)
+    const dpr = isCoarse
+      ? (isPhone ? 1 : Math.min(1.25, window.devicePixelRatio || 1))
+      : Math.min(2, window.devicePixelRatio || 1);
+    // Tampon boyutu canvas'ın KENDİ CSS kutusundan alınır (100dvh) — mobilde adres
+    // çubuğu animasyonunda innerHeight ile dvh ayrışınca buffer'ın esnetilip aracın
+    // ezilmesini önler. ResizeObserver dvh değişimlerini de yakalar.
     const resize = () => {
-      canvas.width = Math.round(window.innerWidth * dpr);
-      canvas.height = Math.round(window.innerHeight * dpr);
+      const w = canvas.clientWidth || window.innerWidth;
+      const h = canvas.clientHeight || window.innerHeight;
+      const bw = Math.round(w * dpr);
+      const bh = Math.round(h * dpr);
+      if (canvas.width === bw && canvas.height === bh) return;
+      canvas.width = bw;
+      canvas.height = bh;
       engine?.redraw();
     };
     window.addEventListener('resize', resize);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
+    ro?.observe(canvas);
 
     // Bölüm-göreli scroll eşlemesi
     const bounds = () => {
@@ -101,11 +133,10 @@ export default function FilmSection() {
 
     const boot = async () => {
       resize();
-      const smallViewport = window.matchMedia('(max-width: 900px)').matches;
-      const use720 = smallViewport || window.innerWidth * dpr < 1600;
+      const use720 = isCoarse || window.innerWidth * dpr < 1600;
       // URL kaynağı lib/filmSources.ts'ten gelir (env destekli); motor mantığı değişmedi
       const url = use720 ? FILM_720_URL : FILM_1080_URL;
-      flog('boot: varyant', { url, smallViewport, dpr });
+      flog('boot: varyant', { url, isCoarse, dpr });
 
       const startEngine = async (e: Engine) => {
         if (disposed) { e.destroy(); return; }
@@ -132,7 +163,7 @@ export default function FilmSection() {
       const useFallback = async (why: unknown) => {
         console.warn('[film] codec yolu düştü, WebP fallback devrede:', why);
         engine?.destroy();
-        const fb = new FallbackEngine('/fallback');
+        const fb = new FallbackEngine('/fallback', { mobile: isCoarse });
         fb.onFatal = (err) => console.error('[film] FATAL: fallback motoru da öldü:', err);
         try {
           await startEngine(fb);
@@ -145,7 +176,7 @@ export default function FilmSection() {
         let remembered = false;
         try { remembered = localStorage.getItem('film-sw') === '1'; } catch { /* gizli mod */ }
         const preferSoftware = new URLSearchParams(location.search).has('sw') || remembered;
-        const se = new ScrubEngine(url, { preferSoftware });
+        const se = new ScrubEngine(url, { preferSoftware, mobile: isCoarse });
         se.onFatal = (err) => { if (!disposed) void useFallback(err); };
         try {
           await startEngine(se);
@@ -157,33 +188,82 @@ export default function FilmSection() {
       }
     };
 
-    // Lenis: sitenin tamamına yumuşak scroll (yalnızca ana sayfada init edilir)
-    lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, touchMultiplier: 1.6 });
-    lenis.on('scroll', () => {
-      engine?.setTarget(targetFromScroll());
-      if (!snapping) armSnap();
-    });
-    window.addEventListener('wheel', armSnap, { passive: true });
-    window.addEventListener('touchstart', armSnap, { passive: true });
+    // Lenis yalnızca fare/ince işaretçili masaüstünde; dokunmatik cihazlar
+    // native scroll kullanır (touchMultiplier tamamen kaldırıldı) ve
+    // film hedefi aktifken rAF döngüsünden (kare başına bir kez) okunur.
+    let active = false;   // film bölümü viewport ±1 ekran içinde mi
+    let running = false;  // rAF döngüsü çalışıyor mu
+
+    if (!isCoarse) {
+      lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1 });
+      // Teşhis modu: gerçek scroll testleri Lenis üzerinden sürülebilsin
+      if (new URLSearchParams(location.search).has('prof')) {
+        (window as unknown as { __lenis?: Lenis | null }).__lenis = lenis;
+      }
+      lenis.on('scroll', () => {
+        if (active) engine?.setTarget(targetFromScroll());
+        if (!snapping) armSnap();
+      });
+      // Snap yalnızca masaüstünde — mobilde tamamen kapalı
+      window.addEventListener('wheel', armSnap, { passive: true });
+    }
 
     const loop = (time: number) => {
+      if (!running) return;
       raf = requestAnimationFrame(loop);
       lenis?.raf(time);
-      if (engine) {
+      // Motor tick'i YALNIZCA film bölümü yakınındayken — uzaktayken decode,
+      // setTarget ve canvas çizimi tamamen durur.
+      if (active && engine) {
         engine.setTarget(targetFromScroll());
         engine.tick(time);
       }
     };
-    raf = requestAnimationFrame(loop);
+    // Masaüstünde Lenis için döngü sürekli gerekir; mobilde yalnızca film aktifken.
+    const needLoop = () => !document.hidden && (lenis !== null || active);
+    const syncLoop = () => {
+      if (needLoop() && !running) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      } else if (!needLoop() && running) {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    };
+
+    // Aktiflik: bölüm viewport'un ±1 ekran bandındayken motor çalışır
+    const io = new IntersectionObserver(
+      (entries) => {
+        const was = active;
+        active = entries[0].isIntersecting;
+        if (active && !was) engine?.resume();  // pencereyi yeniden talep et
+        if (!active && was) engine?.suspend(); // bekleyen/uçuştaki istekleri bırak
+        syncLoop();
+      },
+      { rootMargin: '100% 0px 100% 0px' },
+    );
+    io.observe(section);
+
+    // Sekme gizlenince motor ve döngü tamamen durur; görünür olunca kaldığı yerden sürer
+    const onVisibility = () => {
+      if (document.hidden) engine?.suspend();
+      else engine?.resume();
+      syncLoop();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    syncLoop();
     void boot();
 
     return () => {
       disposed = true;
+      running = false;
       cancelAnimationFrame(raf);
       if (snapTimer) clearTimeout(snapTimer);
+      io.disconnect();
+      ro?.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('resize', resize);
       window.removeEventListener('wheel', armSnap);
-      window.removeEventListener('touchstart', armSnap);
       lenis?.destroy();
       engine?.destroy();
       section.classList.remove('gate-open');
@@ -194,7 +274,7 @@ export default function FilmSection() {
     <section
       ref={sectionRef}
       className={`film-section${reduced ? ' film-reduced' : ''}`}
-      style={{ height: reduced ? '100dvh' : `${FILM_VH}vh` }}
+      style={{ height: reduced ? '100dvh' : `${filmVh}vh` }}
       aria-label="Sinematik araç deneyimi"
     >
       <div className="film-sticky">

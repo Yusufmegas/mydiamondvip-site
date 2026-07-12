@@ -1,7 +1,15 @@
 // WebP kare dizisi fallback'i — YALNIZCA WebCodecs yoksa (iOS < 16.4) devreye girer.
 // 12fps, 720p: film karesi f → webp index floor(f/2)+1 (f_0001.webp .. f_0775.webp).
 
-import { LAST_FRAME, GATE_FRAMES, capForGap, BASE_CAP_FPS, objectPositionAt } from './timeline';
+import {
+  LAST_FRAME,
+  GATE_FRAMES,
+  capForGap,
+  DESKTOP_CAPS,
+  MOBILE_CAPS,
+  type CapProfile,
+  objectPositionAt,
+} from './timeline';
 import type { EngineStats } from './scrubEngine';
 
 const FB_FPS_DIV = 2;      // 24fps → 12fps
@@ -31,14 +39,21 @@ export class FallbackEngine {
     state: 'boot', stalls: 0, maxGapMs: 0, boost: 1, gap: 0, cacheSize: 0,
     inFlight: 0, netPct: 0, drawnFrame: -1, targetFrame: 0, mode: 'fallback',
     reqCenters: '-', reqLast: '-', flushes: 0, jumps: 0, resets: 0, accel: '-',
+    netMB: 0, residentMB: 0, peakResidentMB: 0,
+    wantedNow: 0, wantedMax: 0, staleAborts: 0, netInFlight: 0, netInFlightMax: 0,
   };
 
   onGate: (progress01: number, open: boolean) => void = () => {};
   onFrame: (frame: number) => void = () => {};
   onFatal: (err: Error) => void = () => {};
 
-  constructor(baseUrl = '/fallback') {
+  private caps: CapProfile;
+  private mobile: boolean;
+
+  constructor(baseUrl = '/fallback', opts: { mobile?: boolean } = {}) {
     this.baseUrl = baseUrl;
+    this.mobile = !!opts.mobile;
+    this.caps = this.mobile ? MOBILE_CAPS : DESKTOP_CAPS;
   }
 
   attach(canvas: HTMLCanvasElement) {
@@ -129,8 +144,8 @@ export class FallbackEngine {
     if (gapMs > this.stats.maxGapMs) this.stats.maxGapMs = gapMs;
 
     const gap = this.target - this.playhead;
-    const cap = capForGap(Math.abs(gap));
-    this.stats.boost = cap / BASE_CAP_FPS;
+    const cap = capForGap(Math.abs(gap), this.caps);
+    this.stats.boost = cap / this.caps.base;
     this.stats.gap = gap;
     const maxStep = cap * dt;
     const desired = this.playhead + Math.max(-maxStep, Math.min(maxStep, gap));
@@ -166,7 +181,7 @@ export class FallbackEngine {
     const bmp = this.cache.get(i);
     if (!bmp || !this.ctx || !this.canvas) return;
     const cw = this.canvas.width, ch = this.canvas.height;
-    const { x, y } = objectPositionAt((i - 1) * FB_FPS_DIV);
+    const { x, y } = objectPositionAt((i - 1) * FB_FPS_DIV, this.mobile);
     const scale = Math.max(cw / bmp.width, ch / bmp.height);
     const sw = cw / scale, sh = ch / scale;
     const sx = (bmp.width - sw) * (x / 100);
@@ -176,6 +191,14 @@ export class FallbackEngine {
 
   redraw() {
     if (this.drawn >= 0) this.draw(this.drawn);
+  }
+
+  /** Fallback'te askıya alınacak kalıcı ağ kuyruğu yok — API uyumluluğu için no-op. */
+  suspend() {}
+
+  /** Bölüm dışına çıkıp geri dönüşte tick zaman tabanını sıfırla. */
+  resume() {
+    this.lastTick = 0;
   }
 
   destroy() {

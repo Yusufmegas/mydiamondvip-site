@@ -54,20 +54,35 @@ export const HEAVY_REGIONS: Array<[number, number]> = [
 export const GATE_FRAMES = 96; // ilk N kare hazır olunca perde kalkar
 
 // ---- Gap-adaptif hız tavanı (spec §2) ----
-export const BASE_CAP_FPS = 2.5 * FPS; // 60 kare/sn — sinematik taban
-export const MAX_CAP_FPS = 480;        // vahşi flick'te yetişme tavanı
+export const BASE_CAP_FPS = 2.5 * FPS; // 60 kare/sn — sinematik taban (masaüstü)
+export const MAX_CAP_FPS = 480;        // vahşi flick'te yetişme tavanı (masaüstü)
 export const GAP_LO = 240;             // bu eşiğin altında taban tavan (referans değer)
 export const GAP_HI = 700;             // bu eşikte tavan MAX'a ulaşır
 
-export function capForGap(gapAbs: number): number {
-  if (gapAbs <= GAP_LO) return BASE_CAP_FPS;
-  const t = Math.min(1, (gapAbs - GAP_LO) / (GAP_HI - GAP_LO));
-  return BASE_CAP_FPS + t * (MAX_CAP_FPS - BASE_CAP_FPS);
+/** Cihaz sınıfına göre decode hız tavanları. Mobil: taban ~32 kare/sn,
+ *  yetişme tavanı 96 — her ara kareyi decode etmeye çalışmak yerine motor
+ *  hedef çevresindeki hazır kareye kontrollü geçer (starve-jump). */
+export interface CapProfile {
+  base: number;
+  max: number;
 }
 
-// ---- Mobil CSS crop: segment bazlı object-position (spec §8, placeholder değerler) ----
-// Kare → {x,y} yüzde; keypoint'ler arasında lerp.
-const POS_KEYS: Array<{ frame: number; x: number; y: number }> = [
+export const DESKTOP_CAPS: CapProfile = { base: BASE_CAP_FPS, max: MAX_CAP_FPS };
+export const MOBILE_CAPS: CapProfile = { base: 32, max: 96 };
+
+export function capForGap(gapAbs: number, caps: CapProfile = DESKTOP_CAPS): number {
+  if (gapAbs <= GAP_LO) return caps.base;
+  const t = Math.min(1, (gapAbs - GAP_LO) / (GAP_HI - GAP_LO));
+  return caps.base + t * (caps.max - caps.base);
+}
+
+// ---- CSS crop: segment bazlı object-position (spec §8) ----
+// Kare → {x,y} yüzde; keypoint'ler arasında lerp. Masaüstü ve mobil (dikey ekran)
+// kadraj haritaları AYRIDIR — mobil değerler araç/kabin/final detaylarını dikey
+// kesitte korur; her segmentin x/y'si buradan bağımsızca ayarlanabilir.
+type PosKey = { frame: number; x: number; y: number };
+
+const POS_KEYS_DESKTOP: PosKey[] = [
   { frame: 0,    x: 50, y: 50 },
   { frame: 604,  x: 50, y: 50 },  // orbit boyunca merkez
   { frame: 968,  x: 50, y: 40 },  // kabin
@@ -76,8 +91,22 @@ const POS_KEYS: Array<{ frame: number; x: number; y: number }> = [
   { frame: LAST_FRAME, x: 50, y: 55 },
 ];
 
-export function objectPositionAt(frame: number): { x: number; y: number } {
-  const k = POS_KEYS;
+const POS_KEYS_MOBILE: PosKey[] = [
+  { frame: 0,    x: 50, y: 52 },  // giriş: araç gövdesi dikeyde biraz aşağı
+  { frame: 120,  x: 50, y: 52 },
+  { frame: 242,  x: 46, y: 50 },  // orbit sol durak: burun kesilmesin
+  { frame: 363,  x: 50, y: 50 },  // arka durak: merkez
+  { frame: 484,  x: 54, y: 50 },  // sağ durak: kuyruk kesilmesin
+  { frame: 604,  x: 50, y: 50 },
+  { frame: 847,  x: 50, y: 46 },  // kapı/açılış: eşik detayı
+  { frame: 968,  x: 44, y: 42 },  // kabin: koltuk + tavan detayı sola-yukarı
+  { frame: 1088, x: 44, y: 42 },
+  { frame: 1331, x: 50, y: 50 },  // final: logo/yıldız merkez
+  { frame: LAST_FRAME, x: 50, y: 50 },
+];
+
+export function objectPositionAt(frame: number, mobile = false): { x: number; y: number } {
+  const k = mobile ? POS_KEYS_MOBILE : POS_KEYS_DESKTOP;
   if (frame <= k[0].frame) return { x: k[0].x, y: k[0].y };
   for (let i = 1; i < k.length; i++) {
     if (frame <= k[i].frame) {

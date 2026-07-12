@@ -1,6 +1,3 @@
-import Link from 'next/link';
-import { whatsappLink } from '@/data/contact';
-import { whatsappMessages, ctaVariants } from '@/data/siteContent';
 import type { Faq as FaqItem } from '@/data/services';
 
 /** İç sayfa hero'su — parallax fon + reveal */
@@ -45,35 +42,8 @@ export function SectionHead({
   );
 }
 
-/** Sayfa sonu CTA bandı — sinematik fonlu; başlık varyasyonları data/siteContent'ten */
-export function CtaBand({
-  variant = 'default',
-  title,
-  text,
-}: {
-  variant?: keyof typeof ctaVariants;
-  title?: string;
-  text?: string;
-}) {
-  const v = ctaVariants[variant];
-  return (
-    <section className="cta-band">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/images/placeholders/dark-exterior.webp" alt="" className="cta-band-bg" loading="lazy" data-parallax="0.08" />
-      <div className="container">
-        <h2 data-reveal>{title ?? v.title}</h2>
-        <p data-reveal>{text ?? v.text}</p>
-        <div className="cta-row" data-reveal>
-          <Link className="cta cta-primary" href="/teklif-formu">Teklif Al</Link>
-          <Link className="cta" href="/randevu-talebi">Randevu Talep Et</Link>
-          <a className="cta" href={whatsappLink(whatsappMessages.general)} target="_blank" rel="noopener noreferrer">
-            WhatsApp ile Görüş
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
+/** Sayfa sonu CTA bandı — sinematik sürüm CtaBandFx'te (client bileşen) */
+export { CtaBand } from './CtaBandFx';
 
 /** Editoryal ara söz bandı */
 export function QuoteBand({ kicker, text, image }: { kicker?: string; text: string; image: string }) {

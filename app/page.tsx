@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 // Statik import — next/dynamic({ ssr: false }) Turbopack prod tuzağı (bkz. proje CLAUDE.md §4)
 import FilmSection from "@/components/home/FilmSection";
+import BrandLogoLoop from "@/components/home/BrandLogoLoop";
+import CraftSection from "@/components/home/CraftSection";
+import ProcessSection from "@/components/home/ProcessSection";
+import SplitText from "@/components/SplitText";
 import { SectionHead, CtaBand, QuoteBand } from "@/components/site/Shared";
 import { ServiceCard, ShowcaseCard } from "@/components/site/Cards";
 import { featuredServices } from "@/data/services";
 import { projects } from "@/data/projects";
-import { processSummary } from "@/data/process";
 import { home, whatsappMessages } from "@/data/siteContent";
 import { whatsappLink } from "@/data/contact";
 
@@ -26,7 +29,18 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/stills/f-0100.webp" alt="" className="home-hero-bg" fetchPriority="high" data-parallax="0.08" />
         <div className="container">
-          <h1 data-reveal>{home.hero.title}</h1>
+          <SplitText
+            tag="h1"
+            text={home.hero.title}
+            splitType="words"
+            from={{ opacity: 0, y: 24 }}
+            to={{ opacity: 1, y: 0 }}
+            duration={0.7}
+            delay={80}
+            ease="power3.out"
+            threshold={0.1}
+            rootMargin="0px"
+          />
           <p className="lead" data-reveal>{home.hero.subtitle}</p>
           <div className="cta-row" data-reveal>
             <Link className="cta cta-primary" href={home.hero.primaryCta.href}>
@@ -47,6 +61,9 @@ export default function Home() {
       {/* 2 — Sinematik araç deneyimi (scroll-film — DOKUNMA) */}
       <FilmSection />
 
+      {/* 2.5 — Marka logo şeridi (film → hizmetler geçişi) */}
+      <BrandLogoLoop />
+
       {/* 3 — Hizmetler: lüks katalog (açık tema) */}
       <section className="section section-light">
         <div className="container">
@@ -64,7 +81,7 @@ export default function Home() {
       <QuoteBand kicker={home.quote.kicker} text={home.quote.text} image="/images/placeholders/star-detail.webp" />
 
       {/* 5 — Proje vitrini (açık tema) */}
-      <section className="section section-light">
+      <section className="section section-light showcase-section">
         <div className="container">
           <SectionHead kicker={home.projects.kicker} title={home.projects.title} lead={home.projects.lead} />
           <div className="showcase-grid" data-reveal-group>
@@ -76,46 +93,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6 — Neden MyDiamondVIP? (açık tema) */}
-      <section className="section section-soft">
-        <div className="container sticky-side">
-          <div className="side">
-            <p className="kicker" data-reveal="fade">{home.why.kicker}</p>
-            <h2 data-reveal>{home.why.title}</h2>
-            <p className="lead" data-reveal>{home.why.lead}</p>
-          </div>
-          <div className="why-list" data-reveal-group>
-            {home.why.items.map((f, i) => (
-              <div className="why-item" key={f.title} data-reveal>
-                <span className="no">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <h3>{f.title}</h3>
-                  <p>{f.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 6 — Neden MyDiamondVIP? (açık tema, sinematik reveal — CraftSection) */}
+      <CraftSection />
 
-      {/* 7 — Tasarım süreci şeridi (açık taş) */}
-      <section className="section section-stone">
-        <div className="container">
-          <SectionHead kicker={home.process.kicker} title={home.process.title} lead={home.process.lead} />
-          <div className="process-strip" data-reveal-group>
-            {processSummary.map((s, i) => (
-              <div key={s.title} data-reveal>
-                <p className="no">{String(i + 1).padStart(2, "0")}</p>
-                <h3>{s.title}</h3>
-                <p>{s.description}</p>
-              </div>
-            ))}
-          </div>
-          <p style={{ marginTop: 40 }} data-reveal>
-            <Link className="text-link" href="/tasarim-sureci">Sürecin tamamını inceleyin</Link>
-          </p>
-        </div>
-      </section>
+      {/* 7 — Tasarım süreci şeridi (açık taş, sinematik reveal — ProcessSection) */}
+      <ProcessSection />
 
       {/* 8 — CTA */}
       <CtaBand title={home.cta.title} text={home.cta.text} />

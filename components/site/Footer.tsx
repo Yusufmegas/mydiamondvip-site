@@ -1,11 +1,49 @@
+'use client';
+
+// Site footer'ı — logo + dört kolon scroll'da sırayla reveal olur
+// (once:true, reduced-motion'da animasyon yok). Link hover'ları ve hafif
+// grain dokusu globals.css'te tanımlıdır.
+
 import Link from 'next/link';
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { footerNav } from '@/data/navigation';
 import { contact, whatsappLink } from '@/data/contact';
 import { whatsappMessages } from '@/data/siteContent';
 
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
 export default function Footer() {
+  const scope = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const q = gsap.utils.selector(scope);
+      const cols = q('.footer-grid > *');
+      gsap.fromTo(
+        cols,
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          ease: 'power3.out',
+          stagger: 0.09,
+          scrollTrigger: { trigger: scope.current, start: 'top 88%', once: true },
+          onComplete() {
+            gsap.set(cols, { clearProps: 'transform,willChange,opacity' });
+          },
+        },
+      );
+    },
+    { scope },
+  );
+
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" ref={scope}>
       <div className="container footer-grid">
         <div className="footer-brand">
           <div className="brand-mark">MYDIAMOND<span>VIP</span></div>

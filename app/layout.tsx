@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter_Tight, Marcellus } from "next/font/google";
+import { Bodoni_Moda, Manrope } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
@@ -7,17 +7,17 @@ import ScrollFx from "@/components/site/ScrollFx";
 import { JsonLd } from "@/components/site/Shared";
 import { contact } from "@/data/contact";
 
-const interTight = Inter_Tight({
+const manrope = Manrope({
   variable: "--font-sans",
   subsets: ["latin", "latin-ext"],
-  weight: ["200", "300", "400", "500"],
+  weight: ["300", "400", "500", "600"],
 });
 
-// Display serif — başlıklarda atelier zarafeti (tek ağırlık, ölçülü kullanım)
-const marcellus = Marcellus({
+// Display serif — başlıklarda modern didone karakteri (ölçülü kullanım)
+const bodoniModa = Bodoni_Moda({
   variable: "--font-display",
   subsets: ["latin", "latin-ext"],
-  weight: "400",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${interTight.variable} ${marcellus.variable}`}>
+    <html lang="tr" className={`${manrope.variable} ${bodoniModa.variable}`}>
       <body>
         <JsonLd
           data={{

@@ -1,0 +1,62 @@
+/* BrandLogoLoop — film bölümü ile hizmetler arasındaki premium geçiş şeridi.
+   Kırık beyaz zemin (logolar koyu/renkli), ince hairline sınırlar, düz fon.
+   Yalnızca logolar: masaüstü ~168px, mobil ~130px; içerik dikey ortalanır. */
+
+.brand-loop {
+  position: relative;
+  background: var(--off-white);
+  padding-block: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.brand-loop-border {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(24, 24, 24, 0.12);
+}
+
+.brand-loop-border-top { top: 0; }
+.brand-loop-border-bottom { bottom: 0; }
+
+/* Kenar fade: kalsın ama logoları fazla soldurmasın — daha dar alan */
+.brand-loop .logoloop--fade::before,
+.brand-loop .logoloop--fade::after {
+  width: clamp(20px, 5%, 80px);
+}
+
+/* Logo görünümü: kutu/kart yok; hafif grayscale, belirgin varsayılan opaklık,
+   hover'da yumuşakça orijinal renk ve tam görünürlük */
+.brand-loop .logoloop__item img {
+  opacity: 0.78;
+  filter: grayscale(1);
+  transition:
+    opacity 0.3s ease,
+    filter 0.3s ease,
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-loop .logoloop__item:hover img {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+/* Mobil: hover/scale davranışı yok, ölçüler kompakt (~130px bölüm yüksekliği) */
+@media (max-width: 700px) {
+  .brand-loop { padding-block: 46px; }
+}
+
+@media (hover: none) {
+  .brand-loop .logoloop__item:hover img {
+    opacity: 0.78;
+    filter: grayscale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-loop .logoloop__item img { transition: none; }
+}

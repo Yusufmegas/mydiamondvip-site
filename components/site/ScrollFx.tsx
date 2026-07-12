@@ -15,6 +15,8 @@ export default function ScrollFx() {
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Mobil/dokunmatik: parallax kapalı — scroll başına transform hesabı yapılmaz
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
     if (reduced) {
       // Reveal'ler kapalı; header tema algılama aşağıda yine de çalışır
       document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => el.classList.add('is-in'));
@@ -48,12 +50,30 @@ export default function ScrollFx() {
     };
     scan();
 
-    // Client-side eklenen düğümler (filtre vb.) için sınırlı gözlem
-    const mo = new MutationObserver(() => scan());
+    // Client-side eklenen düğümler (proje filtreleri vb.) için sınırlı gözlem:
+    // yalnızca data-reveal içeren node eklendiğinde, debounce ile tarar —
+    // scroll sırasında sürekli tüm body taraması yapılmaz.
+    let moTimer: ReturnType<typeof setTimeout> | null = null;
+    const mo = new MutationObserver((mutations) => {
+      let relevant = false;
+      for (const m of mutations) {
+        for (const n of m.addedNodes) {
+          if (n instanceof HTMLElement && (n.hasAttribute('data-reveal') || n.querySelector('[data-reveal]'))) {
+            relevant = true;
+            break;
+          }
+        }
+        if (relevant) break;
+      }
+      if (!relevant) return;
+      if (moTimer) clearTimeout(moTimer);
+      moTimer = setTimeout(() => { moTimer = null; scan(); }, 150);
+    });
     mo.observe(document.body, { childList: true, subtree: true });
 
     // --- Parallax + header tema algılama (tek rAF-throttle'lı scroll dinleyicisi) ---
-    const pEls = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'));
+    // Dokunmatik cihazlarda parallax listesi boş bırakılır (maliyet sıfır)
+    const pEls = coarse ? [] : Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]'));
     // Header, altındaki bölümün temasına uyum sağlar: açık bölümlerden biri
     // header hattını (y ≈ 46px) kapsıyorsa html.header-light açılır.
     const lightEls = Array.from(
@@ -88,6 +108,7 @@ export default function ScrollFx() {
     return () => {
       io.disconnect();
       mo.disconnect();
+      if (moTimer) clearTimeout(moTimer);
       if (raf) cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);

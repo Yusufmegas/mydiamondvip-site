@@ -15,7 +15,9 @@ import {
   HEAVY_REGIONS,
   LAST_FRAME,
   capForGap,
-  BASE_CAP_FPS,
+  DESKTOP_CAPS,
+  MOBILE_CAPS,
+  type CapProfile,
   objectPositionAt,
 } from './timeline';
 
@@ -53,6 +55,20 @@ export interface EngineStats {
   resets: number;
   /** Donanım hızlandırma tercihi: auto | sw */
   accel: string;
+  /** Kümülatif indirilen film MB (evict sonrası yeniden indirme dahil) */
+  netMB: number;
+  /** Bellekte tutulan chunk MB (anlık) */
+  residentMB: number;
+  /** Bellekte tutulan chunk MB (tepe) */
+  peakResidentMB: number;
+  /** Bekleyen chunk talebi (anlık / tepe) */
+  wantedNow: number;
+  wantedMax: number;
+  /** Pencere değişimiyle iptal edilen bayat range isteği sayısı */
+  staleAborts: number;
+  /** Ağ in-flight (anlık / tepe) */
+  netInFlight: number;
+  netInFlightMax: number;
 }
 
 export class ScrubEngine {
@@ -91,14 +107,25 @@ export class ScrubEngine {
     state: 'boot', stalls: 0, maxGapMs: 0, boost: 1, gap: 0, cacheSize: 0,
     inFlight: 0, netPct: 0, drawnFrame: -1, targetFrame: 0, mode: 'codec',
     reqCenters: '-', reqLast: '-', flushes: 0, jumps: 0, resets: 0, accel: 'auto',
+    netMB: 0, residentMB: 0, peakResidentMB: 0,
+    wantedNow: 0, wantedMax: 0, staleAborts: 0, netInFlight: 0, netInFlightMax: 0,
   };
 
   onGate: (progress01: number, open: boolean) => void = () => {};
   onFrame: (frame: number) => void = () => {};
   onFatal: (err: Error) => void = () => {};
 
-  constructor(url: string, opts: { preferSoftware?: boolean } = {}) {
-    this.loader = new RangeLoader(url);
+  private caps: CapProfile;
+  private mobile: boolean;
+
+  constructor(url: string, opts: { preferSoftware?: boolean; mobile?: boolean } = {}) {
+    this.mobile = !!opts.mobile;
+    this.caps = this.mobile ? MOBILE_CAPS : DESKTOP_CAPS;
+    // Mobil: eşzamanlı range 1 + ~24MB bellek tavanı; masaüstü: 2 + ~64MB
+    this.loader = new RangeLoader(url, {
+      concurrency: this.mobile ? 1 : 2,
+      maxBytes: (this.mobile ? 24 : 64) * 1024 * 1024,
+    });
     this.preferSoftware = !!opts.preferSoftware;
     this.stats.accel = this.preferSoftware ? 'sw' : 'auto';
   }
@@ -206,8 +233,14 @@ export class ScrubEngine {
         }
       };
       const prevOnChunk = this.loader.onChunk;
-      this.loader.onChunk = (i) => { prevOnChunk(i); tryFeed(); };
+      this.loader.onChunk = (i) => {
+        prevOnChunk(i);
+        tryFeed();
+        // moov ilk chunk'a sığmadıysa sıradaki chunk'ı açıkça iste (on-demand yükleyici)
+        if (!resolved && fed < this.loader.chunkCount) this.loader.want(fed * CHUNK_SIZE, 1);
+      };
       tryFeed();
+      if (!resolved && fed < this.loader.chunkCount) this.loader.want(fed * CHUNK_SIZE, 1);
     });
   }
 
@@ -335,6 +368,8 @@ export class ScrubEngine {
         const s = this.samples[idx];
         if (!s) continue;
         if (!this.loader.hasRange(s.offset, s.size)) {
+          // On-demand yükleyici: bu pencere için gereken aralığı açıkça talep et
+          this.loader.want(s.offset, s.size);
           if (idx === center) this.loader.bump(s.offset); // starve eden byte'ı öne al
           continue;
         }
@@ -470,8 +505,8 @@ export class ScrubEngine {
     if (gapMs > this.stats.maxGapMs) this.stats.maxGapMs = gapMs;
 
     const gap = this.target - this.playhead;
-    const cap = capForGap(Math.abs(gap));
-    this.stats.boost = cap / BASE_CAP_FPS;
+    const cap = capForGap(Math.abs(gap), this.caps);
+    this.stats.boost = cap / this.caps.base;
     this.stats.gap = gap;
 
     const maxStep = cap * dt;
@@ -533,11 +568,24 @@ export class ScrubEngine {
     this.watchdog(now);
     const s = this.samples[desiredIdx];
     if (s) this.loader.setPriorityByte(s.offset);
+    // Aktif pencere: playhead + hedef — pencere chunk bazında değişmedikçe no-op
+    const sT = this.samples[Math.round(this.target)];
+    if (s && sT) this.loader.updateActiveWindow([s.offset, sT.offset]);
 
     this.stats.cacheSize = this.cache.size;
     this.stats.inFlight = this.inFlight.size;
-    this.stats.netPct = this.loader.totalSize ? Math.round((this.loader.doneBytes / this.loader.totalSize) * 100) : 0;
+    this.stats.netPct = this.loader.totalSize
+      ? Math.min(100, Math.round((this.loader.doneBytes / this.loader.totalSize) * 100))
+      : 0;
     this.stats.targetFrame = Math.round(this.target);
+    this.stats.netMB = +(this.loader.doneBytes / 1048576).toFixed(1);
+    this.stats.residentMB = +(this.loader.residentBytesNow / 1048576).toFixed(1);
+    this.stats.peakResidentMB = +(this.loader.peakResidentBytes / 1048576).toFixed(1);
+    this.stats.wantedNow = this.loader.wantedSize;
+    this.stats.wantedMax = this.loader.wantedMax;
+    this.stats.staleAborts = this.loader.staleAborts;
+    this.stats.netInFlight = this.loader.netInFlight;
+    this.stats.netInFlightMax = this.loader.netInFlightMax;
     return this.drawn;
   }
 
@@ -556,9 +604,13 @@ export class ScrubEngine {
     const frame = this.cache.get(idx);
     if (!frame || !this.ctx || !this.canvas) return;
     const cw = this.canvas.width, ch = this.canvas.height;
-    const vw = this.videoW, vh = this.videoH;
-    // object-fit: cover + segment bazlı object-position (spec §8)
-    const { x, y } = objectPositionAt(idx);
+    // Oran güvenliği: kaynağın GERÇEK görünür boyutu (coded/display farkına karşı)
+    const vw = frame.displayWidth || this.videoW;
+    const vh = frame.displayHeight || this.videoH;
+    // cover-crop: kaynak ve hedef oranı karşılaştırılır, merkezden (segment bazlı
+    // object-position ile) kırpılır ve AYNI oranla çizilir — stretch/squash imkânsız:
+    // sw/sh = cw/ch olduğundan kaynak dikdörtgeni hedefle her zaman eş orandadır.
+    const { x, y } = objectPositionAt(idx, this.mobile);
     const scale = Math.max(cw / vw, ch / vh);
     const sw = cw / scale, sh = ch / scale;
     const sx = (vw - sw) * (x / 100);
@@ -569,6 +621,24 @@ export class ScrubEngine {
   /** Yeniden boyutlandırmada son kareyi tazele. */
   redraw() {
     if (this.drawn >= 0) this.draw(this.drawn);
+  }
+
+  /** Bölüm inactive veya sekme gizli: ağ isteklerini askıya al
+   *  (head/gate dışı bekleyenler temizlenir, bayat in-flight iptal edilir). */
+  suspend() {
+    this.loader.suspend();
+  }
+
+  /** Bölüm dışına çıkıp geri dönüşte: tick zaman tabanını sıfırla (sahte stall
+   *  ölçümü olmasın), yüklemeyi aç ve güncel hedef penceresini yeniden talep et. */
+  resume() {
+    this.lastTick = 0;
+    this.lastProgressAt = 0;
+    this.loader.resumeLoading();
+    if (this.decoderReady) {
+      this.requestWindow(Math.round(this.target), 4);
+      this.requestWindow(Math.round(this.playhead));
+    }
   }
 
   destroy() {
