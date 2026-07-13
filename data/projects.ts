@@ -10,6 +10,23 @@ export type ProjectCategory =
   | 'Turizm Araçları'
   | 'Deri Döşeme';
 
+/** Matterport 360° tur — her proje EN FAZLA bir tur taşır (tek fiziksel araç) */
+export interface MatterportTour {
+  title: string;
+  embedUrl: string;
+  poster: string;
+}
+
+export type GalleryOrientation = 'landscape' | 'portrait' | 'square' | 'wide';
+
+export interface ProjectGalleryItem {
+  src: string;
+  alt: string;
+  caption?: string;
+  orientation?: GalleryOrientation;
+  objectPosition?: string;
+}
+
 export interface Project {
   slug: string;
   title: string;
@@ -20,9 +37,8 @@ export interface Project {
   description: string;
   materials: string[];
   image: string;
-  gallery: string[];
-  before: string;
-  after: string;
+  matterportTour?: MatterportTour;
+  gallery: ProjectGalleryItem[];
   keywords: string[];
 }
 
@@ -38,7 +54,111 @@ export const projectCategories: ProjectCategory[] = [
 const img = (slug: string) => `/images/projects/${slug}.webp`;
 const still = (n: string) => `/images/stills/f-${n}.webp`;
 
+/** Film karesi galerisi (gerçek çekimi olmayan eski projeler) — dürüst, genel alt metin */
+const stillGallery = (title: string, frames: string[]): ProjectGalleryItem[] =>
+  frames.map((n, i) => ({
+    src: still(n),
+    alt: `${title} — proje karesi ${i + 1}`,
+    orientation: 'landscape' as const,
+  }));
+
 export const projects: Project[] = [
+  {
+    slug: 'mercedes-vip-dizayn',
+    title: 'Mercedes Vito VIP Dizayn — Proje 01',
+    vehicle: 'Mercedes Vito',
+    categories: ['Mercedes'],
+    operations: ['Karşılıklı VIP koltuk düzeni', 'Yıldız tavan', 'Ambiyans aydınlatma', 'Kabin multimedya ekranı', 'Katlanır masa ünitesi', 'Elektrikli perde'],
+    summary: 'Krem deri ve antrasit dengesinde, yıldız tavanlı ve büyük ekranlı Vito VIP kabini — 360° turla gezilebilir.',
+    description:
+      'Bu Vito dönüşümünde karşılıklı VIP koltuklar, yıldız tavan, çevresel ambiyans hatları ve büyük kabin ekranı tek tasarım dili altında birleştirildi. Krem deri ile antrasit yüzeylerin dengesi, gündüz ve gece ışık senaryolarında ayrı ayrı kalibre edildi. Kabini fotoğraflarla ve interaktif 360° Matterport turuyla inceleyebilirsiniz.',
+    materials: ['Krem nappa deri', 'Fiber optik yıldız tavan', 'Çok bölgeli ambiyans aydınlatma', 'Kabin multimedya sistemi'],
+    image: '/images/projects/mercedes-vip-dizayn/cover.webp',
+    matterportTour: {
+      title: 'Mercedes Vito VIP Dizayn — Proje 01',
+      embedUrl: 'https://my.matterport.com/show/?m=y7jLQXyDvHd',
+      poster: '/images/projects/mercedes-vip-dizayn/matterport-cover.webp',
+    },
+    gallery: [
+      {
+        src: '/images/projects/mercedes-vip-dizayn/gallery-01.webp',
+        alt: 'Mercedes Vito VIP kabin genel görünümü — yıldız tavan, büyük ekran ve karşılıklı VIP koltuklar',
+        caption: 'VIP kabin genel görünümü',
+        orientation: 'landscape',
+        objectPosition: '50% 50%',
+      },
+      {
+        src: '/images/projects/mercedes-vip-dizayn/gallery-02.webp',
+        alt: 'Krem deri VIP koltuklar ve kapitone dikiş detayı, yıldız tavan altında',
+        caption: 'VIP koltuklar ve kapitone deri işçiliği',
+        orientation: 'landscape',
+        objectPosition: '50% 45%',
+      },
+      {
+        src: '/images/projects/mercedes-vip-dizayn/gallery-03.webp',
+        alt: 'VIP koltuklar ve mor tonlu ambiyans aydınlatma senaryosu',
+        caption: 'Ambiyans aydınlatma gece senaryosu',
+        orientation: 'landscape',
+        objectPosition: '50% 45%',
+      },
+      {
+        src: '/images/projects/mercedes-vip-dizayn/gallery-04.webp',
+        alt: 'Kabin multimedya ekranı, katlanır masa ve konsol detayı',
+        caption: 'Multimedya ekranı ve katlanır masa',
+        orientation: 'landscape',
+        objectPosition: '50% 55%',
+      },
+    ],
+    keywords: ['Mercedes VIP dizayn', 'Vito VIP dönüşüm', 'VIP kabin', 'Matterport araç turu'],
+  },
+  {
+    slug: 'mercedes-vito-vip-dizayn-02',
+    title: 'Mercedes Vito VIP Dizayn — Proje 02',
+    vehicle: 'Mercedes Vito',
+    categories: ['Mercedes'],
+    operations: ['Karşılıklı VIP koltuk düzeni', 'Yıldız tavan', 'Ambiyans aydınlatma', 'Ahşap konsol ve masa ünitesi', 'Kabin multimedya ekranı', 'Perde sistemi'],
+    summary: 'Bordo perde ve ahşap detaylarla sıcak tonlu bir Vito VIP kabini — 360° turla gezilebilir.',
+    description:
+      'Bu ikinci Vito projesinde kabin; krem deri koltuklar, bordo perdeler ve ahşap konsol detaylarıyla sıcak tonlu bir karakterde kurgulandı. Yıldız tavan, çevresel ambiyans hatları, açılır masa ünitesi ve kabin ekranı aynı tasarım dilinin parçası olarak uygulandı. Kabini fotoğraflarla ve interaktif 360° Matterport turuyla inceleyebilirsiniz.',
+    materials: ['Krem nappa deri', 'Fiber optik yıldız tavan', 'Gerçek ahşap konsol yüzeyleri', 'Kabin multimedya sistemi'],
+    image: '/images/projects/mercedes-vito-vip-dizayn-02/cover.webp',
+    matterportTour: {
+      title: 'Mercedes Vito VIP Dizayn — Proje 02',
+      embedUrl: 'https://my.matterport.com/show/?m=ASg1DeP33Xs',
+      poster: '/images/projects/mercedes-vito-vip-dizayn-02/matterport-cover.webp',
+    },
+    gallery: [
+      {
+        src: '/images/projects/mercedes-vito-vip-dizayn-02/gallery-01.webp',
+        alt: 'Mercedes Vito VIP kabin genel görünümü — yıldız tavan, kapı paneli ve VIP koltuklar',
+        caption: 'VIP kabin genel görünümü',
+        orientation: 'landscape',
+        objectPosition: '50% 50%',
+      },
+      {
+        src: '/images/projects/mercedes-vito-vip-dizayn-02/gallery-02.webp',
+        alt: 'Krem deri VIP koltuklar, orta kol ünitesi ve mor tonlu ambiyans aydınlatma',
+        caption: 'VIP koltuklar ve ambiyans aydınlatma',
+        orientation: 'landscape',
+        objectPosition: '50% 45%',
+      },
+      {
+        src: '/images/projects/mercedes-vito-vip-dizayn-02/gallery-03.webp',
+        alt: 'Açılır masa ünitesi ve karşılıklı VIP koltuklar, kırmızı ambiyans hatlarıyla',
+        caption: 'Açılır masa ünitesi ve kabin detayı',
+        orientation: 'landscape',
+        objectPosition: '50% 50%',
+      },
+      {
+        src: '/images/projects/mercedes-vito-vip-dizayn-02/gallery-04.webp',
+        alt: 'Kabin multimedya ekranı, hoparlör panelleri ve ahşap konsol detayı',
+        caption: 'Multimedya ekranı ve hoparlör panelleri',
+        orientation: 'wide',
+        objectPosition: '50% 50%',
+      },
+    ],
+    keywords: ['Mercedes Vito VIP dizayn', 'Vito VIP proje', 'VIP kabin', 'Matterport araç turu'],
+  },
   {
     slug: 'turizm-arac-dizayn',
     title: 'Turizm Araç Dizayn',
@@ -50,9 +170,7 @@ export const projects: Project[] = [
       'Şehirler arası VIP transfer yapan bir turizm filosu için hazırlanan bu projede kabin, günde yüzlerce biniş-inişe göre kurgulandı: aşınma dayanımı yüksek premium döşeme, kolay temizlenen zemin mimarisi ve yolcu başına kişisel aydınlatma-şarj ünitesi. Tam akustik yalıtım, uzun yolculuklarda kabini sessiz bir dinlenme alanına çevirir.',
     materials: ['Aşınma dayanımlı nappa deri', 'Fiber optik yıldız tavan', 'Çok bölgeli ambiyans sistemi', 'Tam akustik yalıtım'],
     image: img('turizm-arac-dizayn'),
-    gallery: [still('1010'), still('1040'), still('1150'), still('0900')],
-    before: still('0650'),
-    after: still('1010'),
+    gallery: stillGallery('Turizm Araç Dizayn', ['1010', '1040', '1150', '0900']),
     keywords: ['turizm araç dizayn', 'VIP transfer araç', 'Sprinter turizm dizayn'],
   },
   {
@@ -66,9 +184,7 @@ export const projects: Project[] = [
       'Yoğun seyahat eden bir yönetim ekibi için hazırlanan bu Sprinter; karşılıklı dört elektrikli VIP koltuk, katlanır çalışma masaları, video konferans ekranı ve ses yalıtımlı privacy bölmesiyle hareketli bir ofise dönüştürüldü. Mutfak ünitesi ve buzdolabı, uzun rotalarda kabin konforunu tamamlar.',
     materials: ['Nappa deri', 'Gerçek ahşap konsol', 'DSP tabanlı ses sistemi', 'Elektrikli privacy bölme'],
     image: img('mercedes-sprinter-dizayn'),
-    gallery: [still('0560'), still('1040'), still('0900'), still('1100')],
-    before: still('0360'),
-    after: still('1040'),
+    gallery: stillGallery('Mercedes Sprinter Dizayn', ['0560', '1040', '0900', '1100']),
     keywords: ['Mercedes Sprinter dizayn', 'Sprinter VIP', 'mobil ofis araç'],
   },
   {
@@ -82,9 +198,7 @@ export const projects: Project[] = [
       'Aile kullanımı için hazırlanan bu Caravelle projesinde ikinci sıraya elektrikli VIP koltuklar yerleştirildi; döşeme, çocuklu kullanım gerçeğine göre kolay temizlenen premium deriden seçildi. Ambiyans senaryoları yumuşak geçişli kurgulandı; sonuç, orijinal VW çizgisini koruyan fabrika üstü bir kabin.',
     materials: ['Nappa deri', 'Alcantara tavan', 'Çok bölgeli ambiyans sistemi'],
     image: img('volkswagen-vip-arac-dizayn'),
-    gallery: [still('0320'), still('0480'), still('1000')],
-    before: still('0240'),
-    after: still('1000'),
+    gallery: stillGallery('Volkswagen VIP Araç Dizayn', ['0320', '0480', '1000']),
     keywords: ['Volkswagen VIP araç dizayn', 'Caravelle VIP', 'Transporter dizayn'],
   },
   {
@@ -98,9 +212,7 @@ export const projects: Project[] = [
       'Bu projede aracın tüm oturma yüzeyleri, kapı panelleri ve orta konsolu; sahibinin seçtiği renk kombinasyonuna göre baklava desen kapitone nappa deriyle yeniden döşendi. Yan airbag dikiş hatları ve koltuk donanımları üretici standardında korundu — görünen zarafetin altında görünmeyen disiplin.',
     materials: ['Nappa deri', 'Kontrast iplik', 'Perfore orta panel'],
     image: img('binek-arac-deri-doseme'),
-    gallery: [still('0950'), still('1080'), still('1100')],
-    before: still('0100'),
-    after: still('0950'),
+    gallery: stillGallery('Binek Araç Deri Döşeme', ['0950', '1080', '1100']),
     keywords: ['binek araç deri döşeme', 'araç deri döşeme', 'kapitone döşeme'],
   },
   {
@@ -114,26 +226,8 @@ export const projects: Project[] = [
       'Zırhlı araçlarda iç mekân işçiliği, güvenlik donanımlarının erişim ve çalışma alanlarına dokunmadan ilerlemek zorundadır. Bu projede kabin, zırh aksamına müdahale edilmeden yeniden döşendi; ek akustik yalıtım uygulandı ve dış yüzey koruma filmiyle tamamlandı.',
     materials: ['Teknik deri', 'Yüksek yoğunluklu yalıtım', 'PPF koruma filmi'],
     image: img('zirhli-arac'),
-    gallery: [still('0600'), still('0240'), still('0820')],
-    before: still('0240'),
-    after: still('0600'),
+    gallery: stillGallery('Zırhlı Araç', ['0600', '0240', '0820']),
     keywords: ['zırhlı araç iç dizayn', 'zırhlı araç döşeme'],
-  },
-  {
-    slug: 'mercedes-vip-dizayn',
-    title: 'Mercedes VIP Dizayn',
-    vehicle: 'Mercedes Vito Tourer',
-    categories: ['Mercedes'],
-    operations: ['4+1 VIP düzen', '900 nokta yıldız tavan', 'Elektrikli perde', 'Kabin kontrol paneli', 'DSP ses sistemi'],
-    summary: 'Atölyenin imza işi: krem deri ve antrasit dengesinde, yıldız tavanlı Vito kabini.',
-    description:
-      'İmza projelerimizden biri olan bu Vito dönüşümünde; karşılıklı dört elektrikli VIP koltuk, 900 noktalı yıldız tavan, elektrikli privacy perde ve dokunmatik kabin kontrol paneli uygulandı. Krem deri ile antrasit yüzeylerin dengesi, gündüz ve gece ışık senaryolarında ayrı ayrı kalibre edildi.',
-    materials: ['Krem nappa deri', 'Fiber optik yıldız tavan', 'Gerçek ahşap detaylar', 'DSP ses sistemi'],
-    image: img('mercedes-vip-dizayn'),
-    gallery: [still('0100'), still('0900'), still('1000'), still('1040'), still('1400')],
-    before: still('0060'),
-    after: still('1040'),
-    keywords: ['Mercedes VIP dizayn', 'Vito VIP dönüşüm', 'VIP kabin'],
   },
   {
     slug: 'deri-doseme',
@@ -146,9 +240,7 @@ export const projects: Project[] = [
       'Yüksek kilometreli bu araçta hedef gösterişli bir değişim değil, “ilk günkü fabrika hâlinden daha iyisi”ydi. Koltuklar orijinal desen korunarak nappa deriyle yeniden döşendi; tavan alcantara ile yenilendi. Fark, ancak dokununca anlaşılır — tam da istendiği gibi.',
     materials: ['OEM desen nappa deri', 'Alcantara tavan yüzeyi'],
     image: img('deri-doseme'),
-    gallery: [still('1080'), still('1000'), still('0950')],
-    before: still('0100'),
-    after: still('1080'),
+    gallery: stillGallery('Deri Döşeme', ['1080', '1000', '0950']),
     keywords: ['deri döşeme', 'koltuk yenileme', 'alcantara tavan'],
   },
   {
@@ -162,9 +254,7 @@ export const projects: Project[] = [
       'Tahoe’nun geniş kabini; antrasit nappa, karbon detaylar ve zemin ambiyans hatlarıyla yeniden yorumlandı. Üçüncü sıra dahil tüm oturma yüzeyleri yenilendi; multimedya sistemi arka kabin ekranlarıyla genişletildi. Koyu tonların içinde ışık, yalnızca gerektiği yerde konuşur.',
     materials: ['Antrasit nappa deri', 'Karbon kaplama', 'Çok bölgeli ambiyans'],
     image: img('chevrolet-dizayn'),
-    gallery: [still('0480'), still('1080'), still('1360')],
-    before: still('0360'),
-    after: still('1080'),
+    gallery: stillGallery('Chevrolet Dizayn', ['0480', '1080', '1360']),
     keywords: ['Chevrolet dizayn', 'Tahoe iç dizayn', 'SUV deri döşeme'],
   },
 ];

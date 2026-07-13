@@ -24,17 +24,21 @@ export function ServiceCard({ service, index }: { service: Service; index?: numb
   );
 }
 
-/** Sinematik vitrin kartı — projeler (metin görselin üzerinde) */
+/** Sinematik vitrin kartı — projeler (metin görselin üzerinde).
+ *  Matterport turu olan projelerde 360° TUR badge'i gösterir; kart hiçbir
+ *  iframe yüklemez, yalnızca detay sayfasına bağlantı verir. */
 export function ShowcaseCard({ project }: { project: Project }) {
+  const hasTour = Boolean(project.matterportTour);
   return (
     <Link href={`/projeler/${project.slug}`} className="showcase-card" data-reveal>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={project.image} alt={project.title} loading="lazy" />
+      {hasTour && <span className="tour-badge">360° TUR</span>}
       <div className="showcase-body">
         <p className="card-meta">{project.vehicle}</p>
         <h3>{project.title}</h3>
         <p>{project.summary}</p>
-        <span className="text-link">Projeyi İncele</span>
+        <span className="text-link">{hasTour ? 'Projeyi ve 360° Turu İncele' : 'Projeyi İncele'}</span>
       </div>
     </Link>
   );

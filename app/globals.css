@@ -1348,43 +1348,8 @@ html.menu-open { overflow: hidden; }
 
 /* ---------- Proje detay ---------- */
 
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 18px;
-}
-
-.gallery-grid img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  border-radius: 2px;
-  border: 1px solid var(--hairline);
-}
-
-.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-
-.before-after figure {
-  position: relative;
-  border: 1px solid var(--hairline);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.before-after img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
-
-.before-after figcaption {
-  position: absolute;
-  left: 14px;
-  top: 12px;
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  background: rgba(10, 10, 11, 0.72);
-  padding: 7px 13px;
-  border-radius: 2px;
-  backdrop-filter: blur(6px);
-}
+/* (Eski .gallery-grid ve Önce/Sonra .before-after blokları kaldırıldı —
+   proje galerisi artık .project-gallery + lightbox sistemini kullanıyor.) */
 
 .meta-grid {
   display: grid;
@@ -1577,7 +1542,6 @@ html.menu-open { overflow: hidden; }
 @media (max-width: 700px) {
   .container { width: min(100% - 40px, 1240px); }
   .form-grid { grid-template-columns: 1fr; }
-  .before-after { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
   .process-strip { grid-template-columns: 1fr; }
   .why-item { grid-template-columns: 46px 1fr; }
@@ -2149,3 +2113,292 @@ html.menu-open .menu-toggle span { background: #efe9df; }
 
 /* Hizmetler sayfası: platform ve satış sonrası bölüm başlık boşlukları */
 .services-sub-head { margin-bottom: clamp(28px, 4vw, 44px); max-width: 760px; }
+
+/* ==================================================================
+   MATTERPORT 360° DENEYİM + PROJE GALERİSİ + LIGHTBOX
+   Koyu premium çerçeve, ince altın vurgu; scroll davranışına müdahale yok.
+   ================================================================== */
+
+/* --- Matterport bölümü: koyu premium çevre --- */
+.mp-section {
+  background: var(--bg-2);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.mp-frame {
+  position: relative;
+  width: min(100%, 1400px);
+  margin-inline: auto;
+  aspect-ratio: 16 / 9;
+  min-height: 620px;
+  overflow: hidden;
+  border-radius: 2px;
+  border: 1px solid var(--amber-soft); /* çok ince altın vurgu */
+  background: var(--bg);
+}
+
+.mp-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.mp-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 10, 11, 0.24) 0%, rgba(10, 10, 11, 0.42) 70%, rgba(10, 10, 11, 0.66) 100%);
+}
+
+.mp-poster-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  padding: 24px;
+}
+
+.mp-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.mp-start { pointer-events: auto; }
+
+/* Kapatma kontrolü — Matterport ALANININ içinde, fixed değil */
+.mp-close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 3;
+  padding: 11px 18px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: rgba(10, 10, 11, 0.82);
+  border: 1px solid rgba(239, 233, 223, 0.28);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.mp-close:hover { border-color: var(--amber); color: var(--amber); }
+
+@media (max-width: 1080px) {
+  .mp-frame { min-height: 520px; }
+}
+
+@media (max-width: 700px) {
+  .mp-frame {
+    aspect-ratio: auto;
+    height: 70dvh;
+    min-height: 500px;
+    max-height: 760px;
+  }
+}
+
+/* --- Editorial proje galerisi: 12 kolon ritmi --- */
+.project-gallery {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+}
+
+.gallery-item {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: var(--bg-3);
+  aspect-ratio: 4 / 3;
+}
+
+.gallery-item img { transition: transform 1s var(--ease-out); }
+
+.g-span-8 { grid-column: span 8; aspect-ratio: 16 / 10; }
+.g-span-6 { grid-column: span 6; aspect-ratio: 4 / 3; }
+.g-span-4 { grid-column: span 4; aspect-ratio: 4 / 3; }
+.g-span-4.g-tall { aspect-ratio: 3 / 4; }
+
+/* İlk geniş görselin yanındaki boşluğu ikinci görsel doldurur */
+.project-gallery .gallery-item:nth-child(2) { grid-column: span 4; }
+
+.gallery-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 26px 16px 12px;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(239, 233, 223, 0.92);
+  background: linear-gradient(180deg, rgba(10, 10, 11, 0) 0%, rgba(10, 10, 11, 0.66) 100%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery-item:hover img { transform: scale(1.03); }
+}
+
+@media (max-width: 1080px) {
+  .project-gallery .gallery-item,
+  .project-gallery .gallery-item:nth-child(2) { grid-column: span 6; }
+  .project-gallery .gallery-item:first-child { grid-column: span 12; }
+}
+
+@media (max-width: 700px) {
+  .project-gallery { gap: 14px; }
+  .project-gallery .gallery-item,
+  .project-gallery .gallery-item:nth-child(2),
+  .project-gallery .gallery-item:first-child { grid-column: span 12; }
+  .project-gallery .gallery-item.g-span-4:not(.g-tall) { grid-column: span 12; }
+}
+
+/* --- Lightbox: scroll kilidi YOK, overlay sabit katman --- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(10, 10, 11, 0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 40px);
+}
+
+.lightbox-figure {
+  width: 100%;
+  max-width: 1320px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lightbox-media {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.lightbox-figure figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 16px;
+  color: var(--cream-dim);
+  font-size: 13px;
+  padding-bottom: 4px;
+}
+
+.lightbox-count {
+  color: var(--amber);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+}
+
+.lightbox-close,
+.lightbox-nav {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--cream);
+  background: rgba(239, 233, 223, 0.08);
+  border: 1px solid rgba(239, 233, 223, 0.22);
+  border-radius: 2px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.lightbox-close:hover,
+.lightbox-nav:hover { border-color: var(--amber); color: var(--amber); }
+
+.lightbox-close { top: 16px; right: 16px; }
+.lightbox-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+.lightbox-next { right: 16px; top: 50%; transform: translateY(-50%); }
+
+@media (max-width: 700px) {
+  .lightbox-prev { left: 8px; }
+  .lightbox-next { right: 8px; }
+}
+
+/* --- 360° TUR badge (proje kartları) --- */
+.tour-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  padding: 7px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(10, 10, 11, 0.72);
+  border: 1px solid var(--amber-soft);
+  border-radius: 2px;
+  backdrop-filter: blur(6px);
+}
+
+/* Mobil stacked showcase kartında da görselin üstünde kalır */
+@media (max-width: 700px) {
+  .showcase-card .tour-badge { top: 12px; right: 12px; }
+}
+
+/* --- Proje detayları: premium katalog düzeni --- */
+.project-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 5vw, 64px);
+}
+
+.fact-block h3 {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.fact-block ul { list-style: none; }
+
+.fact-block li {
+  padding: 9px 0;
+  font-size: 15px;
+  color: var(--cream-dim);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.fact-block li:last-child { border-bottom: none; }
+
+@media (max-width: 700px) {
+  .project-facts { grid-template-columns: 1fr; }
+}
