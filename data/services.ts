@@ -7,6 +7,9 @@ export interface Faq {
   a: string;
 }
 
+/** Hizmet kategorisi: ana hizmetler / araç platformları / satış sonrası */
+export type ServiceCategory = 'core' | 'platform' | 'aftercare';
+
 export interface Service {
   slug: string;
   title: string;
@@ -16,6 +19,10 @@ export interface Service {
   /** Sayfa hero paragrafı */
   intro: string;
   image: string;
+  /** Ana sayfa/hizmetler pillar grid görseli (public/images/service-pillars/) */
+  pillarImage?: string;
+  /** Pillar kartında görsel crop odağı (object-position) */
+  pillarPosition?: string;
   vehicles: string[];
   scope: string[];
   materials: string[];
@@ -23,8 +30,12 @@ export interface Service {
   faqs: Faq[];
   relatedProjects: string[];
   keywords: string[];
-  /** Ana sayfa hizmet vitrini */
+  /** ESKİ ana sayfa vitrini bayrağı — geriye dönük uyumluluk için korunur */
   featured: boolean;
+  category: ServiceCategory;
+  displayOrder: number;
+  /** Ana sayfadaki sekiz ana hizmet vitrini */
+  homeFeatured: boolean;
 }
 
 // Gerçek atölye görselleri PNG (masaüstü "Vip design görseller" setinden);
@@ -34,13 +45,14 @@ const img = (slug: string, ext: 'png' | 'webp' = 'png') => `/images/services/${s
 export const services: Service[] = [
   {
     slug: 'vip-arac-dizayni',
-    title: 'VIP Araç Dizaynı',
-    shortTitle: 'VIP Araç Dizaynı',
+    title: 'Komple VIP Araç Dönüşümü',
+    shortTitle: 'Komple VIP Dönüşüm',
     summary:
-      'Yolcu konforu, mahremiyet ve teknolojik donanımı tek projede birleştiren, araç modeline özel VIP kabin tasarımı.',
+      'Aracın kullanım senaryosundan koltuk yerleşimine, döşemeden teknolojiye kadar tek merkezde yürütülen bütüncül VIP dönüşüm.',
     intro:
       'MyDiamondVIP; Vito, Sprinter, V-Class, Transporter ve Caravelle platformlarında, yolcu konforu, mahremiyet, malzeme kalitesi ve teknolojik donanımları birlikte ele alan kişiye özel VIP kabin tasarımları geliştirir. Her proje, aracın kullanım amacından yola çıkar; koltuk yerleşiminden ışık senaryosuna kadar tüm kararlar sahibinin gündelik hayatına göre verilir.',
     image: img('vip-arac-dizayni'),
+    pillarImage: '/images/service-pillars/komple-vip-arac-donusumu.webp',
     vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Transporter', 'VW Caravelle', 'Ford Custom'],
     scope: [
       'Kullanım senaryosuna göre koltuk yerleşimi ve VIP koltuk uygulaması',
@@ -79,6 +91,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-vip-dizayn', 'turizm-arac-dizayn', 'mercedes-sprinter-dizayn'],
     keywords: ['VIP araç dizayn', 'VIP oto dizayn', 'VIP araç iç dizayn', 'İstanbul VIP araç dizayn'],
     featured: true,
+    category: 'core',
+    displayOrder: 1,
+    homeFeatured: true,
   },
   {
     slug: 'mercedes-vito-vip-dizayn',
@@ -122,6 +137,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-vip-dizayn', 'turizm-arac-dizayn'],
     keywords: ['Mercedes Vito VIP dizayn', 'Vito VIP', 'Vito iç dizayn', 'VIP araç dizayn'],
     featured: true,
+    category: 'platform',
+    displayOrder: 1,
+    homeFeatured: false,
   },
   {
     slug: 'mercedes-sprinter-vip-dizayn',
@@ -164,6 +182,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-sprinter-dizayn', 'turizm-arac-dizayn'],
     keywords: ['Mercedes Sprinter VIP dizayn', 'Sprinter VIP', 'Sprinter iç dizayn'],
     featured: true,
+    category: 'platform',
+    displayOrder: 2,
+    homeFeatured: false,
   },
   {
     slug: 'mercedes-v-class-vip-dizayn',
@@ -195,6 +216,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-vip-dizayn'],
     keywords: ['Mercedes V-Class VIP dizayn', 'V-Class iç dizayn', 'VIP araç dizayn'],
     featured: false,
+    category: 'platform',
+    displayOrder: 3,
+    homeFeatured: false,
   },
   {
     slug: 'volkswagen-vip-dizayn',
@@ -226,16 +250,20 @@ export const services: Service[] = [
     relatedProjects: ['volkswagen-vip-arac-dizayn'],
     keywords: ['Volkswagen VIP dizayn', 'Transporter VIP', 'Caravelle VIP dizayn'],
     featured: false,
+    category: 'platform',
+    displayOrder: 4,
+    homeFeatured: false,
   },
   {
     slug: 'binek-arac-deri-doseme',
-    title: 'Binek Araç Deri Döşeme',
-    shortTitle: 'Deri Döşeme',
+    title: 'Deri Döşeme & Özel Yüzeyler',
+    shortTitle: 'Deri & Özel Yüzeyler',
     summary:
-      'Aracın kabin karakterine göre seçilen deri, dikiş ve yüzey kombinasyonlarıyla terzi işi iç mekân.',
+      'Nappa deri, Alcantara, ahşap, karbon ve kişiye özel dikişlerle terzi işi kabin uygulamaları.',
     intro:
       'Deri döşeme, araçta her gün dokunduğunuz tek yüzeydir. MyDiamondVIP; koltuk, kapı paneli, direksiyon ve tavanda, aracın kullanım amacına ve kabin karakterine uygun deri, dikiş ve yüzey kombinasyonlarıyla iç mekânı kişiye özel bir deneyime dönüştürür. Her araç için kalıp, desen ve renk çalışması ayrı hazırlanır.',
     image: img('binek-arac-deri-doseme'),
+    pillarImage: '/images/service-pillars/deri-doseme-ozel-yuzeyler.webp',
     vehicles: ['Tüm binek modeller', 'SUV ve pickup', 'Klasik araçlar'],
     scope: [
       'Koltuk ve kafalık döşeme — kapitone, baklava, perfore seçenekleri',
@@ -263,6 +291,9 @@ export const services: Service[] = [
     relatedProjects: ['binek-arac-deri-doseme', 'deri-doseme', 'chevrolet-dizayn'],
     keywords: ['binek araç deri döşeme', 'araç deri döşeme', 'oto deri döşeme', 'koltuk döşeme'],
     featured: true,
+    category: 'core',
+    displayOrder: 4,
+    homeFeatured: true,
   },
   {
     slug: 'arac-ici-kaplama',
@@ -294,16 +325,21 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-vip-dizayn', 'chevrolet-dizayn'],
     keywords: ['araç içi kaplama', 'konsol kaplama', 'karbon kaplama', 'ahşap kaplama'],
     featured: true,
+    category: 'core',
+    displayOrder: 9, // ikincil uzmanlık sayfası — ana grid dışı
+    homeFeatured: false,
   },
   {
     slug: 'ambiyans-aydinlatma-yildiz-tavan',
-    title: 'Ambiyans Aydınlatma & Yıldız Tavan',
-    shortTitle: 'Ambiyans & Yıldız Tavan',
+    title: 'Yıldız Tavan & Ambiyans Aydınlatma',
+    shortTitle: 'Yıldız Tavan & Ambiyans',
     summary:
-      'Kabinin gece kimliğini kuran fiber optik yıldız tavan ve göz almayan, dolaylı ambiyans mimarisi.',
+      'Fiber optik yıldız tavan, dolaylı ambiyans hatları ve kişiye özel gece ışık senaryoları.',
     intro:
       'Kabinin duygusunu gündüz malzeme, gece ışık belirler. MyDiamondVIP; fiber optik yıldız tavanı ve çok bölgeli ambiyans hatlarını araca özel tasarlar: ışığın kendisi değil, yüzeye vuruşu görünür. Gündüz ve gece senaryoları ayrı ayrı kalibre edilir.',
     image: img('ambiyans-aydinlatma-yildiz-tavan'),
+    pillarImage: '/images/service-pillars/yildiz-tavan-ambiyans.webp',
+    pillarPosition: '50% 20%',
     vehicles: ['VIP van projeleri', 'Binek araçlar', 'Turizm araçları'],
     scope: [
       'Fiber optik yıldız tavan — statik veya kayan yıldız senaryosu',
@@ -330,6 +366,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-vip-dizayn', 'turizm-arac-dizayn'],
     keywords: ['yıldız tavan', 'ambiyans aydınlatma', 'fiber optik tavan', 'araç aydınlatma'],
     featured: true,
+    category: 'core',
+    displayOrder: 5,
+    homeFeatured: true,
   },
   {
     slug: 'muzik-ses-sistemi',
@@ -362,6 +401,9 @@ export const services: Service[] = [
     relatedProjects: ['mercedes-sprinter-dizayn'],
     keywords: ['araç ses sistemi', 'oto müzik sistemi', 'araç akustik yalıtım'],
     featured: true,
+    category: 'core',
+    displayOrder: 10, // ikincil uzmanlık sayfası — ana grid dışı
+    homeFeatured: false,
   },
   {
     slug: 'dis-kaplama',
@@ -393,6 +435,9 @@ export const services: Service[] = [
     relatedProjects: ['zirhli-arac', 'chevrolet-dizayn'],
     keywords: ['araç kaplama', 'renk değişim folyo', 'PPF', 'boya koruma filmi'],
     featured: true,
+    category: 'core',
+    displayOrder: 11, // folyo/PPF odaklı ikincil hizmet sayfası — ana grid dışı
+    homeFeatured: false,
   },
   {
     slug: 'bakim-onarim',
@@ -421,10 +466,262 @@ export const services: Service[] = [
     relatedProjects: ['deri-doseme'],
     keywords: ['VIP araç bakım', 'deri koltuk bakımı', 'araç iç onarım'],
     featured: true,
+    category: 'aftercare',
+    displayOrder: 1,
+    homeFeatured: false,
+  },
+  {
+    slug: 'ozel-kabin-tasarimi',
+    title: 'Özel Kabin Tasarımı & İç Mimari',
+    shortTitle: 'Kabin Tasarımı & İç Mimari',
+    summary:
+      'Kabin planı, tavan, zemin, panel mimarisi ve malzeme paletinin araca ve sahibine özel olarak tasarlanması.',
+    intro:
+      'Kabin tasarımı, dönüşümün mimari katmanıdır: yerleşim planı, tavan ve zemin yapısı, panel hatları ve malzeme paleti burada kurulur. MyDiamondVIP her projede kabini boş bir hacim olarak ele alır; oturma düzeni, sirkülasyon, saklama ve ışık, aracın kullanım senaryosuna göre yeniden planlanır. Sonuç, sonradan eklenmiş parçalar değil, tek elden çizilmiş bir iç mimaridir.',
+    image: '/images/service-pillars/ozel-kabin-tasarimi.webp',
+    pillarImage: '/images/service-pillars/ozel-kabin-tasarimi.webp',
+    vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Transporter', 'VW Caravelle'],
+    scope: [
+      'Kullanım senaryosuna göre kabin yerleşim planı',
+      'Tavan, zemin ve kapı paneli mimarisi — araca özel kalıp',
+      'Malzeme paleti: deri, ahşap, karbon ve metal kombinasyonları',
+      'Privacy bölme, perde ve saklama entegrasyonu',
+      'Aydınlatma ve teknoloji altyapısının plana işlenmesi',
+    ],
+    materials: [
+      'Yüksek yoğunluklu kompozit panel altyapısı',
+      'Gerçek ahşap, karbon ve piano black yüzeyler',
+      'Nappa deri ve Alcantara kaplama katmanları',
+      'Çok katmanlı akustik ve ısı yalıtımı',
+    ],
+    steps: [
+      'Keşif: araç ölçüleri ve kullanım senaryosu analizi',
+      'Yerleşim planı, malzeme panosu ve konsept onayı',
+      'Panel imalatı, kaplama ve montaj',
+      'Detay kontrolü ve teslim',
+    ],
+    faqs: [
+      {
+        q: 'Kabin planı tamamen sıfırdan mı çiziliyor?',
+        a: 'Evet. Her proje, aracın gövdesi ve sahibinin kullanım senaryosu üzerinden yeniden planlanır; hazır şablon uygulanmaz.',
+      },
+      {
+        q: 'Mevcut iç donanım korunabilir mi?',
+        a: 'İstenirse korunur. Plan, orijinal donanımın hangi bölümlerinin kalacağına göre kademeli olarak da kurgulanabilir.',
+      },
+    ],
+    relatedProjects: ['mercedes-vip-dizayn', 'mercedes-sprinter-dizayn'],
+    keywords: ['özel kabin tasarımı', 'araç iç mimari', 'VIP kabin planı', 'araç kabin tasarımı'],
+    featured: false,
+    category: 'core',
+    displayOrder: 2,
+    homeFeatured: true,
+  },
+  {
+    slug: 'vip-koltuk-konfor-sistemleri',
+    title: 'VIP Koltuk & Konfor Sistemleri',
+    shortTitle: 'VIP Koltuk & Konfor',
+    summary:
+      'Elektrikli, raylı, yatabilen, ısıtmalı, soğutmalı ve masajlı VIP koltuk çözümleri.',
+    intro:
+      'VIP kabinin merkezinde koltuk vardır. MyDiamondVIP; elektrikli hareket, ray sistemi, yatar pozisyon, ısıtma, havalandırma ve masaj fonksiyonlarını tek koltuk mimarisinde birleştirir. Koltuk seçimi ve yerleşimi, yolculuk süresine ve kullanım amacına göre planlanır; döşeme, kabinin genel malzeme diliyle aynı elden yapılır.',
+    image: '/images/service-pillars/vip-koltuk-konfor-sistemleri.webp',
+    pillarImage: '/images/service-pillars/vip-koltuk-konfor-sistemleri.webp',
+    vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Transporter', 'Binek araçlar'],
+    scope: [
+      'Elektrikli kaptan koltuğu ve VIP koltuk uygulamaları',
+      'Ray sistemi ile ileri-geri ve döner yerleşim',
+      'Yatar pozisyon, bacak desteği ve ottoman mekanizmaları',
+      'Isıtma, havalandırma ve masaj fonksiyonları',
+      'Koltuk içi USB, kablosuz şarj ve kontrol panelleri',
+    ],
+    materials: [
+      'OEM sınıfı koltuk iskeleti ve mekanizmalar',
+      'Nappa deri, perfore ve kapitone döşeme seçenekleri',
+      'CANBUS uyumlu elektrik altyapısı',
+    ],
+    steps: [
+      'Kullanım senaryosu ve yerleşim analizi',
+      'Koltuk modeli, fonksiyon listesi ve döşeme onayı',
+      'Montaj, elektrik entegrasyonu ve döşeme',
+      'Fonksiyon testleri ve teslim',
+    ],
+    faqs: [
+      {
+        q: 'Koltuklar araç muayenesine uygun mu?',
+        a: 'Yerleşim planı mevzuat gereklilikleri gözetilerek hazırlanır; bağlantı ve emniyet kemeri standartları korunur, uygunluk süreçlerinde yönlendirme sağlanır.',
+      },
+      {
+        q: 'Mevcut koltuklarım dönüştürülebilir mi?',
+        a: 'Uygun iskelete sahip koltuklara fonksiyon eklenebilir; çoğu projede ise VIP sınıfı hazır iskelet üzerine kişiye özel döşeme uygulanır.',
+      },
+    ],
+    relatedProjects: ['mercedes-vip-dizayn', 'turizm-arac-dizayn'],
+    keywords: ['VIP koltuk', 'masajlı koltuk', 'elektrikli koltuk', 'kaptan koltuğu'],
+    featured: false,
+    category: 'core',
+    displayOrder: 3,
+    homeFeatured: true,
+  },
+  {
+    slug: 'multimedya-ses-akilli-kontrol',
+    title: 'Multimedya, Ses & Akıllı Kontrol',
+    shortTitle: 'Multimedya & Akıllı Kontrol',
+    summary:
+      'Ekran, profesyonel ses, tablet kontrolü, perde, aydınlatma ve kabin sistemlerinin tek arayüzde yönetilmesi.',
+    intro:
+      'Modern VIP kabinde teknoloji, tek tek cihazlar değil bütünleşik bir sistemdir. MyDiamondVIP; ekranları, ses sistemini, perdeleri, aydınlatmayı ve iklimlendirme senaryolarını tek kontrol arayüzünde toplar. Kablolama ve güç yönetimi araç veri yoluna dokunmadan, sigortalı ayrı hatlarla planlanır; kullanım, tablet veya telefon üzerinden tek dokunuşla yapılır.',
+    image: '/images/service-pillars/multimedya-akilli-kontrol.webp',
+    pillarImage: '/images/service-pillars/multimedya-akilli-kontrol.webp',
+    vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Transporter'],
+    scope: [
+      'Kabin ekranları ve akıllı TV entegrasyonu',
+      'DSP tabanlı profesyonel ses sistemi kurulumu',
+      'Tablet ve telefon üzerinden kabin kontrolü',
+      'Elektrikli perde, aydınlatma ve senaryo yönetimi',
+      'Wi-Fi, güç yönetimi ve gizli kablolama altyapısı',
+    ],
+    materials: [
+      'Referans sınıfı komponent hoparlör ve amfiler',
+      'Endüstriyel sınıf kontrol üniteleri',
+      'CANBUS uyumlu, sigortalı ayrı güç hatları',
+    ],
+    steps: [
+      'İhtiyaç analizi ve sistem şeması',
+      'Cihaz listesi ve arayüz onayı',
+      'Kablolama, montaj ve yazılım kurulumu',
+      'Senaryo testleri ve kullanım eğitimi',
+    ],
+    faqs: [
+      {
+        q: 'Sistem aracın orijinal elektroniğini etkiler mi?',
+        a: 'Hayır. Tüm beslemeler araç veri yoluna dokunmadan, sigortalı bağımsız hatlarla kurulur; orijinal donanım aynen çalışmaya devam eder.',
+      },
+      {
+        q: 'Kontrol arayüzü hangi cihazlarda çalışır?',
+        a: 'Kabine sabitlenen tablet ile birlikte iOS ve Android telefonlardan da aynı senaryolar yönetilebilir.',
+      },
+    ],
+    relatedProjects: ['mercedes-sprinter-dizayn', 'mercedes-vip-dizayn'],
+    keywords: ['araç multimedya sistemi', 'akıllı kabin kontrolü', 'VIP ses sistemi', 'araç tablet kontrolü'],
+    featured: false,
+    category: 'core',
+    displayOrder: 6,
+    homeFeatured: true,
+  },
+  {
+    slug: 'mini-bar-masa-mobil-ofis',
+    title: 'Mini Bar, Masa & Mobil Ofis',
+    shortTitle: 'Mini Bar & Mobil Ofis',
+    summary:
+      'Buzdolabı, elektrikli masa, kablosuz şarj, gizli saklama ve yönetici çalışma alanları.',
+    intro:
+      'Yol üzerinde geçen saatler, doğru donanımla çalışma ve ağırlama zamanına dönüşür. MyDiamondVIP; buzdolabı, elektrikli katlanır masa, kablosuz şarj ve gizli saklama çözümlerini kabin mimarisinin içine gömülü olarak tasarlar. Hedef, sonradan eklenmiş aksesuar görüntüsü değil, konsolun doğal bir parçası gibi duran işlevsel üniteler kurmaktır.',
+    image: '/images/service-pillars/mini-bar-masa-mobil-ofis.webp',
+    pillarImage: '/images/service-pillars/mini-bar-masa-mobil-ofis.webp',
+    vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Caravelle'],
+    scope: [
+      'Konsola gömülü buzdolabı ve mini bar ünitesi',
+      'Elektrikli katlanır masa ve çalışma yüzeyleri',
+      'Kablosuz şarj, USB-C ve 230V güç noktaları',
+      'Gizli saklama, sürgülü bölme ve bardaklık üniteleri',
+      'Yönetici koltuğuna göre planlanan mobil ofis düzeni',
+    ],
+    materials: [
+      'Araç sınıfı kompresörlü soğutma üniteleri',
+      'Alüminyum mekanizmalı elektrikli masa sistemleri',
+      'Kabin diliyle eşleşen ahşap, deri ve metal yüzeyler',
+    ],
+    steps: [
+      'Kullanım senaryosu ve yerleşim analizi',
+      'Ünite listesi ve konsol tasarım onayı',
+      'İmalat, montaj ve güç entegrasyonu',
+      'Fonksiyon testleri ve teslim',
+    ],
+    faqs: [
+      {
+        q: 'Buzdolabı aracın aküsünü zorlar mı?',
+        a: 'Üniteler bağımsız sigortalı hatlardan beslenir ve akü koruma eşiğiyle çalışır; kontak kapalıyken derin deşarj oluşmaz.',
+      },
+      {
+        q: 'Masa sürüş sırasında güvenli mi?',
+        a: 'Masalar kilitli mekanizmalıdır; kapalı konumda titreşimsiz sabitlenir ve sürüş güvenliğini etkilemez.',
+      },
+    ],
+    relatedProjects: ['mercedes-sprinter-dizayn', 'turizm-arac-dizayn'],
+    keywords: ['araç mini bar', 'araç buzdolabı', 'mobil ofis araç', 'araç katlanır masa'],
+    featured: false,
+    category: 'core',
+    displayOrder: 7,
+    homeFeatured: true,
+  },
+  {
+    slug: 'dis-tasarim-govde-uygulamalari',
+    title: 'Dış Tasarım & Gövde Uygulamaları',
+    shortTitle: 'Dış Tasarım & Gövde',
+    summary:
+      'Body kit, panjur, jant, basamak, dış kaplama ve aracın genel karakterini tamamlayan gövde uygulamaları.',
+    intro:
+      'Kabinde kurulan karakter, dış tasarımla tamamlanır. MyDiamondVIP; body kit, panjur, jant, elektrikli basamak ve dış kaplama uygulamalarını aracın orijinal hatlarına saygılı, bütüncül bir gövde diliyle uygular. Amaç gösterişli eklentiler değil, aracın duruşunu netleştiren ölçülü ve kalıcı bir dış kimliktir.',
+    image: '/images/service-pillars/dis-tasarim-govde.webp',
+    pillarImage: '/images/service-pillars/dis-tasarim-govde.webp',
+    vehicles: ['Mercedes Vito', 'Mercedes Sprinter', 'Mercedes V-Class', 'VW Transporter'],
+    scope: [
+      'Body kit ve tampon uygulamaları',
+      'Panjur, ayna kapağı ve dış aksesuar dönüşümleri',
+      'Jant seçimi ve lastik uyumu',
+      'Elektrikli yan basamak montajı',
+      'Renk değişim folyo ve koruma filmi ile bütünleşik gövde dili',
+    ],
+    materials: [
+      'OEM uyumlu poliüretan ve ABS gövde parçaları',
+      'Premium cast folyo ve PPF filmleri',
+      'Korozyona dayanıklı montaj donanımı',
+    ],
+    steps: [
+      'Gövde analizi ve konsept görselleştirme',
+      'Parça listesi ve uygulama onayı',
+      'Montaj, boya/kaplama ve hizalama',
+      'Yol testi ve teslim',
+    ],
+    faqs: [
+      {
+        q: 'Body kit orijinal tampona zarar verir mi?',
+        a: 'Uygulamalar geri dönüştürülebilir montaj yöntemleriyle yapılır; istenirse araç orijinal görünümüne döndürülebilir.',
+      },
+      {
+        q: 'Jant değişimi garanti ve sigortayı etkiler mi?',
+        a: 'Araç üreticisinin onayladığı ölçü aralığında kalınır; yük ve hız endeksleri orijinal değerlerin altına düşürülmez.',
+      },
+    ],
+    relatedProjects: ['zirhli-arac', 'volkswagen-vip-arac-dizayn'],
+    keywords: ['araç body kit', 'Vito body kit', 'araç dış tasarım', 'elektrikli basamak'],
+    featured: false,
+    category: 'core',
+    displayOrder: 8,
+    homeFeatured: true,
   },
 ];
 
-export const featuredServices = services.filter((s) => s.featured);
+const byOrder = (a: Service, b: Service) => a.displayOrder - b.displayOrder;
+
+/** Ana sayfa + hizmetler sayfası ilk bölümü: sekiz ana hizmet */
+export const coreServices = services
+  .filter((s) => s.category === 'core' && s.homeFeatured)
+  .sort(byOrder);
+
+/** Araç platformları (Vito, Sprinter, V-Class, Volkswagen) */
+export const platformServices = services
+  .filter((s) => s.category === 'platform')
+  .sort(byOrder);
+
+/** Satış sonrası (bakım & onarım) */
+export const aftercareServices = services
+  .filter((s) => s.category === 'aftercare')
+  .sort(byOrder);
+
+/** GERİYE DÖNÜK: eski ana sayfa vitrini — artık sekiz ana hizmete işaret eder */
+export const featuredServices = coreServices;
 
 export function getService(slug: string): Service | undefined {
   return services.find((s) => s.slug === slug);

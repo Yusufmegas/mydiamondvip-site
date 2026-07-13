@@ -11,7 +11,7 @@ export const home = {
   services: {
     kicker: 'Hizmetler',
     title: 'Aracınız İçin Uçtan Uca Tasarım',
-    lead: 'Tasarımdan teslime her uygulama tek atölyede, tek sorumlulukla. Koltuk mimarisinden ışık senaryosuna kadar bütün kararlar aynı elden çıkar.',
+    lead: 'İç mimariden koltuk sistemlerine, deri işçiliğinden akıllı kabin teknolojilerine kadar tüm dönüşüm tek ekip tarafından yönetilir.',
   },
   projects: {
     kicker: 'Projeler',

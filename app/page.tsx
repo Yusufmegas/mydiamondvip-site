@@ -6,9 +6,9 @@ import BrandLogoLoop from "@/components/home/BrandLogoLoop";
 import CraftSection from "@/components/home/CraftSection";
 import ProcessSection from "@/components/home/ProcessSection";
 import SplitText from "@/components/SplitText";
+import ServicePillars from "@/components/home/ServicePillars";
 import { SectionHead, CtaBand, QuoteBand } from "@/components/site/Shared";
-import { ServiceCard, ShowcaseCard } from "@/components/site/Cards";
-import { featuredServices } from "@/data/services";
+import { ShowcaseCard } from "@/components/site/Cards";
 import { projects } from "@/data/projects";
 import { home, whatsappMessages } from "@/data/siteContent";
 import { whatsappLink } from "@/data/contact";
@@ -64,13 +64,11 @@ export default function Home() {
       {/* 2.5 — Marka logo şeridi (film → hizmetler geçişi) */}
       <BrandLogoLoop />
 
-      {/* 3 — Hizmetler: lüks katalog (açık tema) */}
+      {/* 3 — Hizmetler: sekiz ana hizmet, editorial pillar grid (açık tema) */}
       <section className="section section-light">
         <div className="container">
           <SectionHead kicker={home.services.kicker} title={home.services.title} lead={home.services.lead} />
-          <div className="grid-cards" data-reveal-group>
-            {featuredServices.map((s, i) => <ServiceCard key={s.slug} service={s} index={i} />)}
-          </div>
+          <ServicePillars />
           <p style={{ marginTop: 36 }} data-reveal>
             <Link className="text-link" href="/hizmetler">Tüm hizmetleri inceleyin</Link>
           </p>
