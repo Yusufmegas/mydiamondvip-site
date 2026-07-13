@@ -1,6 +1,15 @@
-// Proje portfolyosu — kartlar, filtreler ve detay sayfaları buradan beslenir.
-// Görseller: public/images/projects/<slug>.webp + galeri için public/images/stills/.
-// Gerçek proje fotoğrafları geldiğinde yalnızca bu yollar güncellenir.
+// ============================================================================
+// DEPRECATED (RUNTIME): Bu dosya artık public sayfaların BİRİNCİL veri kaynağı
+// DEĞİLDİR. Projeler PostgreSQL + admin panelinden yönetilir
+// (lib/projects/repository.ts).
+//
+// Bu dosya İKİ amaçla korunur:
+//   1. Veritabanı seed kaynağı  → prisma/seed.ts (npm run db:seed)
+//   2. Development/build fallback → DATABASE_URL yokken site çalışmaya devam eder
+//
+// Production çalışma zamanında DATABASE_URL zorunludur; bu dosyaya sessiz
+// düşüş YAPILMAZ (repository açık yapılandırma hatası üretir).
+// ============================================================================
 
 export type ProjectCategory =
   | 'Mercedes'

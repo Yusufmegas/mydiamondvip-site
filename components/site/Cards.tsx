@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Service } from '@/data/services';
-import type { Project } from '@/data/projects';
+import type { ProjectView } from '@/lib/projects/types';
 
 /** Lüks katalog kartı — hizmetler */
 export function ServiceCard({ service, index }: { service: Service; index?: number }) {
@@ -27,7 +27,7 @@ export function ServiceCard({ service, index }: { service: Service; index?: numb
 /** Sinematik vitrin kartı — projeler (metin görselin üzerinde).
  *  Matterport turu olan projelerde 360° TUR badge'i gösterir; kart hiçbir
  *  iframe yüklemez, yalnızca detay sayfasına bağlantı verir. */
-export function ShowcaseCard({ project }: { project: Project }) {
+export function ShowcaseCard({ project }: { project: ProjectView }) {
   const hasTour = Boolean(project.matterportTour);
   return (
     <Link href={`/projeler/${project.slug}`} className="showcase-card" data-reveal>

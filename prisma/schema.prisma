@@ -1,0 +1,180 @@
+// MyDiamondVIP — proje yönetim paneli veri modeli (PostgreSQL, Prisma 7)
+// Better Auth tabloları (User/Session/Account/Verification) resmi adapter
+// yapısına göre eklenmiştir; tahmini eski şema kullanılmamıştır.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Proje yönetimi ----------
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaRole {
+  COVER
+  MATTERPORT_POSTER
+  GALLERY
+}
+
+enum MediaOrientation {
+  LANDSCAPE
+  PORTRAIT
+  SQUARE
+  WIDE
+}
+
+model Project {
+  id                String        @id @default(cuid())
+  slug              String        @unique
+  title             String
+  vehicle           String
+  categories        String[]
+  operations        String[]
+  summary           String
+  description       String
+  materials         String[]
+  keywords          String[]
+  status            ProjectStatus @default(DRAFT)
+  featured          Boolean       @default(false)
+  sortOrder         Int           @default(0)
+  matterportTitle   String?
+  matterportUrl     String?
+  matterportModelId String?       @unique
+  seoTitle          String?
+  seoDescription    String?
+  robotsIndex       Boolean       @default(true)
+  publishedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  media     ProjectMedia[]
+  redirects SlugRedirect[]
+
+  @@index([status, featured, sortOrder])
+  @@map("project")
+}
+
+model ProjectMedia {
+  id               String           @id @default(cuid())
+  projectId        String
+  role             MediaRole
+  storageKey       String?
+  publicUrl        String
+  thumbnailUrl     String?
+  originalFileName String?
+  mimeType         String?
+  width            Int?
+  height           Int?
+  fileSize         Int?
+  alt              String           @default("")
+  caption          String?
+  orientation      MediaOrientation @default(LANDSCAPE)
+  objectPositionX  Int              @default(50)
+  objectPositionY  Int              @default(50)
+  sortOrder        Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, role, sortOrder])
+  @@map("project_media")
+}
+
+model SlugRedirect {
+  id        String   @id @default(cuid())
+  oldSlug   String   @unique
+  newSlug   String
+  projectId String?
+  createdAt DateTime @default(now())
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("slug_redirect")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  action      String
+  entityType  String
+  entityId    String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+// ---------- Better Auth (resmi adapter şeması) ----------
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("OWNER")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}

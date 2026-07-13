@@ -1,136 +1,38 @@
+// Public proje detayı — yalnızca PUBLISHED kayıtlar (repository üzerinden).
+// DRAFT/ARCHIVED → 404; değişen slug'lar SlugRedirect ile kalıcı yönlendirilir.
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { PageHero, SectionHead, CtaBand, JsonLd } from '@/components/site/Shared';
-import { ShowcaseCard } from '@/components/site/Cards';
-import MatterportExperience from '@/components/projects/MatterportExperience';
-import ProjectGallery from '@/components/projects/ProjectGallery';
-import { projects, getProject, relatedProjects } from '@/data/projects';
-import { contact } from '@/data/contact';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { getPublishedProjectBySlug, getRelatedProjects, resolveSlugRedirect } from '@/lib/projects/repository';
+import { ProjectDetail } from '@/components/projects/ProjectDetail';
 
-export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
-}
+// Panelden yayınlama/güncelleme revalidatePath ile anında yansır; ek ISR güvencesi.
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getPublishedProjectBySlug(slug);
   if (!project) return {};
   return {
-    title: `${project.title} — ${project.vehicle}`,
-    description: project.summary,
+    title: project.seoTitle || `${project.title} — ${project.vehicle}`,
+    description: project.seoDescription || project.summary,
     keywords: project.keywords,
     alternates: { canonical: `/projeler/${slug}` },
     openGraph: { images: [project.image] },
+    robots: project.robotsIndex === false ? { index: false, follow: false } : undefined,
   };
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = getProject(slug);
-  if (!project) notFound();
-  const related = relatedProjects(slug);
+  const project = await getPublishedProjectBySlug(slug);
 
-  return (
-    <>
-      <JsonLd
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'CreativeWork',
-          name: project.title,
-          description: project.summary,
-          image: `${contact.siteUrl}${project.image}`,
-          creator: { '@type': 'Organization', name: contact.companyName },
-        }}
-      />
+  if (!project) {
+    // Slug değişmiş olabilir → kalıcı redirect (loop korumalı)
+    const target = await resolveSlugRedirect(slug);
+    if (target && target !== slug) permanentRedirect(`/projeler/${target}`);
+    notFound();
+  }
 
-      {/* 1 — Proje hero */}
-      <PageHero
-        kicker={project.categories.join(' · ')}
-        title={project.title}
-        lead={project.description}
-        image={project.image}
-      />
-
-      {/* 2 — Araç ve uygulama bilgileri */}
-      <section className="section section-light">
-        <div className="container meta-grid" data-reveal-group>
-          <div data-reveal>
-            <h3>Araç Modeli</h3>
-            <p>{project.vehicle}</p>
-          </div>
-          <div data-reveal>
-            <h3>Uygulama Alanı</h3>
-            <p>{project.categories.join(', ')}</p>
-          </div>
-          <div data-reveal>
-            <h3>Uygulanan İşlemler</h3>
-            <ul>{project.operations.map((o) => <li key={o}>— {o}</li>)}</ul>
-          </div>
-          <div data-reveal>
-            <h3>Malzeme Detayları</h3>
-            <ul>{project.materials.map((m) => <li key={m}>— {m}</li>)}</ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 3 — Matterport 360° araç deneyimi (yalnızca turu olan projelerde) */}
-      {project.matterportTour && (
-        <section className="section mp-section">
-          <div className="container">
-            <SectionHead
-              kicker="360° Dijital Araç Deneyimi"
-              title="Aracın İçini Her Açıdan Keşfedin"
-              lead="Kabin yerleşimini, koltuk sistemlerini, malzeme detaylarını ve aydınlatma çözümlerini interaktif 360° deneyim üzerinden inceleyin."
-            />
-            <MatterportExperience tour={project.matterportTour} />
-          </div>
-        </section>
-      )}
-
-      {/* 4 — Yüksek kaliteli detay galerisi */}
-      <section className="section section-stone">
-        <div className="container">
-          <SectionHead
-            kicker="Detay Galerisi"
-            title="Malzeme, İşçilik ve Teknolojiye Yakından Bakın"
-            lead="Kabin mimarisinden deri işçiliğine, yıldız tavandan akıllı kontrol sistemlerine kadar projenin öne çıkan detaylarını inceleyin."
-          />
-          <ProjectGallery items={project.gallery} />
-        </div>
-      </section>
-
-      {/* 5 — Proje detayları */}
-      <section className="section section-light">
-        <div className="container">
-          <SectionHead kicker="Proje Detayları" title="Kabini Oluşturan Unsurlar" />
-          <div className="project-facts" data-reveal-group>
-            <div className="fact-block" data-reveal>
-              <h3>Uygulanan İşlemler</h3>
-              <ul>{project.operations.map((o) => <li key={o}>{o}</li>)}</ul>
-            </div>
-            <div className="fact-block" data-reveal>
-              <h3>Kullanılan Malzemeler</h3>
-              <ul>{project.materials.map((m) => <li key={m}>{m}</li>)}</ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6 — Benzer projeler */}
-      <section className="section section-soft">
-        <div className="container">
-          <SectionHead kicker="Projeler" title="Benzer Projeler" />
-          <div className="showcase-grid" data-reveal-group>
-            {related.map((p) => <ShowcaseCard key={p.slug} project={p} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* 7 — Teklif CTA */}
-      <CtaBand
-        title="Benzer bir proje mi düşünüyorsunuz?"
-        text="Aracınızı ve beklentinizi paylaşın; bu projedeki yaklaşımın aracınıza nasıl uyarlanacağını birlikte planlayalım."
-      />
-    </>
-  );
+  const related = await getRelatedProjects(slug);
+  return <ProjectDetail project={project} related={related} />;
 }

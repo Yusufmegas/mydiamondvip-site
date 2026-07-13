@@ -40,6 +40,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# şablon dosyası yalnızca değişken İSİMLERİNİ içerir — commit edilir
+!.env.example
 
 # vercel
 .vercel
@@ -47,3 +49,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma generated client (build sirasinda uretilir)
+/lib/generated/

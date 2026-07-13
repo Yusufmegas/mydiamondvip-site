@@ -1,19 +1,26 @@
 'use client';
 
 // Premium portfolyo: kategori filtreli sinematik vitrin ızgarası.
+// Veri artık server'dan (repository → yalnızca PUBLISHED) prop olarak gelir.
 
-import { useState } from 'react';
-import { projects, projectCategories, type ProjectCategory } from '@/data/projects';
+import { useMemo, useState } from 'react';
+import type { ProjectView } from '@/lib/projects/types';
 import { ShowcaseCard } from './Cards';
 
-export default function ProjectsGrid() {
-  const [filter, setFilter] = useState<ProjectCategory | 'Tümü'>('Tümü');
+export default function ProjectsGrid({ projects }: { projects: ProjectView[] }) {
+  const categories = useMemo(() => {
+    const seen: string[] = [];
+    for (const p of projects) for (const c of p.categories) if (!seen.includes(c)) seen.push(c);
+    return seen;
+  }, [projects]);
+
+  const [filter, setFilter] = useState<string>('Tümü');
   const visible = filter === 'Tümü' ? projects : projects.filter((p) => p.categories.includes(filter));
 
   return (
     <>
       <div className="filter-chips" role="tablist" aria-label="Proje filtreleri" data-reveal="fade">
-        {(['Tümü', ...projectCategories] as const).map((c) => (
+        {['Tümü', ...categories].map((c) => (
           <button
             key={c}
             role="tab"

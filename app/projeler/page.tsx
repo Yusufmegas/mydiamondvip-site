@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import { PageHero, CtaBand } from '@/components/site/Shared';
 import ProjectsGrid from '@/components/site/ProjectsGrid';
+import { getPublishedProjects } from '@/lib/projects/repository';
+
+// Panelden yayınlama sonrası revalidatePath ile anında tazelenir;
+// ek güvence olarak periyodik ISR.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'Projeler — VIP Araç Dizayn Portfolyosu',
@@ -9,7 +14,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/projeler' },
 };
 
-export default function Page() {
+export default async function Page() {
+  const projects = await getPublishedProjects();
+
   return (
     <>
       <PageHero
@@ -19,7 +26,7 @@ export default function Page() {
       />
       <section className="section section-light">
         <div className="container">
-          <ProjectsGrid />
+          <ProjectsGrid projects={projects} />
         </div>
       </section>
       <CtaBand />

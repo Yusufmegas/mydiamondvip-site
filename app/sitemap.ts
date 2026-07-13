@@ -1,10 +1,14 @@
+// Sitemap — projeler yalnızca PUBLISHED kayıtlardan (repository) üretilir.
+// Admin rotaları asla girmez; robotsIndex=false projeler hariç tutulur.
 import type { MetadataRoute } from 'next';
+import { getPublishedProjects } from '@/lib/projects/repository';
 import { services } from '@/data/services';
-import { projects } from '@/data/projects';
 import { blogPosts } from '@/data/blog';
 import { contact } from '@/data/contact';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const revalidate = 300;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = contact.siteUrl;
   const staticRoutes = [
     '', '/kurumsal', '/hizmetler', '/projeler', '/tasarim-sureci',
@@ -15,6 +19,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: p === '' ? 1 : 0.8,
   }));
 
+  const projects = await getPublishedProjects();
+
   return [
     ...staticRoutes,
     ...services.map((s) => ({
@@ -22,11 +28,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly' as const,
       priority: 0.9,
     })),
-    ...projects.map((p) => ({
-      url: `${base}/projeler/${p.slug}`,
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    })),
+    ...projects
+      .filter((p) => p.robotsIndex !== false)
+      .map((p) => ({
+        url: `${base}/projeler/${p.slug}`,
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      })),
     ...blogPosts.map((p) => ({
       url: `${base}/blog/${p.slug}`,
       lastModified: p.date,

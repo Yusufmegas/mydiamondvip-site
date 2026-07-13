@@ -1,0 +1,267 @@
+/* Admin panel — koyu antrasit, krem metin, kontrollü altın vurgu.
+   Public site chrome'u (header/footer/whatsapp) admin rotalarında gizlenir. */
+
+body:has(.adm-root) .site-header,
+body:has(.adm-root) .site-footer,
+body:has(.adm-root) .floating-wa {
+  display: none;
+}
+
+.adm-root {
+  min-height: 100dvh;
+  background: #101012;
+  color: #efe9df;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.adm-root a { color: inherit; }
+.adm-root *:focus-visible { outline: 2px solid #c99b5f; outline-offset: 2px; }
+
+/* ---- Panel yerleşimi ---- */
+.adm-shell { display: grid; grid-template-columns: 230px 1fr; min-height: 100dvh; }
+
+.adm-side {
+  background: #0a0a0b;
+  border-right: 1px solid rgba(239, 233, 223, 0.1);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adm-brand {
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  color: #efe9df;
+  padding: 8px 10px 20px;
+}
+
+.adm-brand span { color: #c99b5f; }
+
+.adm-nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 3px;
+  color: rgba(239, 233, 223, 0.72);
+  font-size: 13.5px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.adm-nav-link:hover { background: rgba(239, 233, 223, 0.06); color: #efe9df; }
+.adm-nav-link.active { background: rgba(201, 155, 95, 0.14); color: #e8c896; }
+
+.adm-side-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
+
+.adm-main { display: flex; flex-direction: column; min-width: 0; }
+
+.adm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(239, 233, 223, 0.1);
+  background: #131316;
+}
+
+.adm-header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; }
+.adm-user { font-size: 12.5px; color: rgba(239, 233, 223, 0.6); }
+
+.adm-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ---- Ortak bileşen stilleri ---- */
+.adm-card {
+  background: #17171a;
+  border: 1px solid rgba(239, 233, 223, 0.1);
+  border-radius: 4px;
+  padding: 18px;
+}
+
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 3px;
+  border: 1px solid rgba(239, 233, 223, 0.24);
+  background: transparent;
+  color: #efe9df;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.adm-btn:hover { border-color: #c99b5f; color: #e8c896; }
+.adm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.adm-btn-primary { background: #c99b5f; border-color: #c99b5f; color: #171310; }
+.adm-btn-primary:hover { background: #d8ad72; color: #171310; }
+
+.adm-btn-danger { border-color: rgba(220, 90, 90, 0.5); color: #e79a9a; }
+.adm-btn-danger:hover { border-color: #dc5a5a; color: #ffb2b2; }
+
+.adm-btn-sm { padding: 6px 10px; font-size: 11.5px; }
+
+.adm-input,
+.adm-textarea,
+.adm-select {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 3px;
+  border: 1px solid rgba(239, 233, 223, 0.18);
+  background: #101012;
+  color: #efe9df;
+  font-family: inherit;
+  font-size: 13.5px;
+  transition: border-color 0.2s ease;
+}
+
+.adm-input:focus, .adm-textarea:focus, .adm-select:focus { border-color: #c99b5f; outline: none; }
+.adm-textarea { min-height: 110px; resize: vertical; }
+
+.adm-label { display: block; font-size: 12px; letter-spacing: 0.06em; color: rgba(239, 233, 223, 0.66); margin-bottom: 6px; }
+.adm-field { display: flex; flex-direction: column; gap: 0; }
+.adm-field + .adm-field { margin-top: 14px; }
+.adm-error { color: #e79a9a; font-size: 12px; margin-top: 5px; }
+.adm-hint { color: rgba(239, 233, 223, 0.45); font-size: 11.5px; margin-top: 5px; }
+
+.adm-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.adm-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.adm-checkbox { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.adm-checkbox input { width: 16px; height: 16px; accent-color: #c99b5f; }
+
+/* ---- Tablo ---- */
+.adm-table { width: 100%; border-collapse: collapse; }
+.adm-table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(239, 233, 223, 0.5);
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(239, 233, 223, 0.12);
+}
+.adm-table td { padding: 10px 12px; border-bottom: 1px solid rgba(239, 233, 223, 0.07); vertical-align: middle; }
+.adm-table tr:hover td { background: rgba(239, 233, 223, 0.025); }
+.adm-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 2px; display: block; }
+
+.adm-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.adm-badge-published { background: rgba(90, 180, 120, 0.16); color: #8fd6ab; }
+.adm-badge-draft { background: rgba(239, 233, 223, 0.1); color: rgba(239, 233, 223, 0.7); }
+.adm-badge-archived { background: rgba(220, 120, 90, 0.14); color: #e0a288; }
+.adm-badge-tour { background: rgba(201, 155, 95, 0.16); color: #e8c896; }
+
+/* ---- Dashboard istatistikleri ---- */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.adm-stat-num { font-size: 30px; font-weight: 600; color: #e8c896; line-height: 1.1; }
+.adm-stat-label { font-size: 12px; color: rgba(239, 233, 223, 0.55); margin-top: 4px; }
+
+/* ---- Form sekmeleri ---- */
+.adm-tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(239, 233, 223, 0.12); flex-wrap: wrap; }
+.adm-tab {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(239, 233, 223, 0.6);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.adm-tab:hover { color: #efe9df; }
+.adm-tab.active { color: #e8c896; border-bottom-color: #c99b5f; }
+
+/* ---- Liste editörü (kategoriler/işlemler/malzemeler/keywords) ---- */
+.adm-list-editor { display: flex; flex-direction: column; gap: 6px; }
+.adm-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #101012;
+  border: 1px solid rgba(239, 233, 223, 0.12);
+  border-radius: 3px;
+  padding: 6px 8px;
+}
+.adm-list-item input { flex: 1; border: none; background: none; color: #efe9df; font-size: 13px; }
+.adm-list-item input:focus { outline: none; }
+.adm-drag { cursor: grab; color: rgba(239, 233, 223, 0.4); user-select: none; padding: 0 2px; }
+.adm-list-item button { background: none; border: none; color: rgba(239, 233, 223, 0.5); cursor: pointer; font-size: 14px; }
+.adm-list-item button:hover { color: #e79a9a; }
+
+/* ---- Medya yönetimi ---- */
+.adm-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+.adm-media-item {
+  background: #101012;
+  border: 1px solid rgba(239, 233, 223, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.adm-media-item img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.adm-media-meta { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+
+.adm-drop {
+  border: 1px dashed rgba(239, 233, 223, 0.3);
+  border-radius: 4px;
+  padding: 26px;
+  text-align: center;
+  color: rgba(239, 233, 223, 0.55);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.adm-drop:hover, .adm-drop.dragover { border-color: #c99b5f; background: rgba(201, 155, 95, 0.05); }
+
+.adm-progress { height: 4px; background: rgba(239, 233, 223, 0.1); border-radius: 2px; overflow: hidden; }
+.adm-progress > span { display: block; height: 100%; background: #c99b5f; transition: width 0.3s ease; }
+
+/* ---- Toast ---- */
+.adm-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1200;
+  padding: 12px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid;
+  max-width: 380px;
+}
+.adm-toast-ok { background: #14261c; border-color: rgba(90, 180, 120, 0.5); color: #8fd6ab; }
+.adm-toast-err { background: #2a1414; border-color: rgba(220, 90, 90, 0.5); color: #ffb2b2; }
+
+/* ---- Giriş sayfası ---- */
+.adm-login {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #0a0a0b;
+}
+.adm-login-card { width: min(100%, 400px); }
+.adm-login-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+.adm-login-sub { font-size: 12.5px; color: rgba(239, 233, 223, 0.5); margin-bottom: 20px; }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .adm-shell { grid-template-columns: 1fr; }
+  .adm-side { flex-direction: row; align-items: center; overflow-x: auto; gap: 6px; padding: 10px 12px; }
+  .adm-brand { padding: 0 8px 0 0; white-space: nowrap; }
+  .adm-side-bottom { margin-top: 0; flex-direction: row; margin-left: auto; }
+  .adm-grid-2 { grid-template-columns: 1fr; }
+  .adm-content { padding: 14px; }
+  .adm-table-wrap { overflow-x: auto; }
+}

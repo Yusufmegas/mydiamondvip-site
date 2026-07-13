@@ -9,9 +9,13 @@ import SplitText from "@/components/SplitText";
 import ServicePillars from "@/components/home/ServicePillars";
 import { SectionHead, CtaBand, QuoteBand } from "@/components/site/Shared";
 import { ShowcaseCard } from "@/components/site/Cards";
-import { projects } from "@/data/projects";
+import { getFeaturedProjects } from "@/lib/projects/repository";
 import { home, whatsappMessages } from "@/data/siteContent";
 import { whatsappLink } from "@/data/contact";
+
+// Proje vitrini panelden yönetilir; yayınlama sonrası revalidatePath('/') ile
+// anında tazelenir, ek güvence olarak periyodik ISR.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "MyDiamondVIP — VIP Araç Dizayn | Mercedes Vito & Sprinter | İstanbul",
@@ -21,7 +25,8 @@ export const metadata: Metadata = {
   openGraph: { images: ["/poster.webp"] },
 };
 
-export default function Home() {
+export default async function Home() {
+  const featuredProjects = await getFeaturedProjects(4);
   return (
     <>
       {/* 1 — Hero */}
@@ -83,7 +88,7 @@ export default function Home() {
         <div className="container">
           <SectionHead kicker={home.projects.kicker} title={home.projects.title} lead={home.projects.lead} />
           <div className="showcase-grid" data-reveal-group>
-            {projects.slice(0, 4).map((p) => <ShowcaseCard key={p.slug} project={p} />)}
+            {featuredProjects.map((p) => <ShowcaseCard key={p.slug} project={p} />)}
           </div>
           <p style={{ marginTop: 36 }} data-reveal>
             <Link className="cta" href="/projeler">Projeleri İncele</Link>
