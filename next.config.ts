@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.dirname(fileURLToPath(import.meta.url)),
   },
+  images: {
+    // Yalnızca kendi R2 media domain'imiz — genel ('**') izin VERİLMEZ
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "media.mydiamondvip.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
   experimental: {
     serverActions: {
       // Uygulama kuralı 20 MB dosya; multipart ek yükü için pay bırakılır.

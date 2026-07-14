@@ -8,6 +8,11 @@ import type { ProjectView } from '@/lib/projects/types';
 import { contact } from '@/data/contact';
 
 export function ProjectDetail({ project, related }: { project: ProjectView; related: ProjectView[] }) {
+  // R2 görselleri zaten absolute URL; yalnızca site-relative yollara domain eklenir
+  const projectImageUrl =
+    project.image.startsWith('http://') || project.image.startsWith('https://')
+      ? project.image
+      : `${contact.siteUrl}${project.image}`;
   return (
     <>
       <JsonLd
@@ -16,7 +21,7 @@ export function ProjectDetail({ project, related }: { project: ProjectView; rela
           '@type': 'CreativeWork',
           name: project.title,
           description: project.summary,
-          image: `${contact.siteUrl}${project.image}`,
+          image: projectImageUrl,
           creator: { '@type': 'Organization', name: contact.companyName },
         }}
       />
