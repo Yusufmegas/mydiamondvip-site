@@ -42,9 +42,32 @@ function getClient(): S3Client {
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
       },
       forcePathStyle: true, // sağlayıcı bağımsız en uyumlu mod
+      maxAttempts: 2, // takılı bağlantıda SDK'nın uzun retry zincirini kısalt
     });
   }
   return client;
+}
+
+// Hiçbir S3 işlemi sınırsız beklemez — takılı TCP bağlantısı admin panelini
+// "Yükleniyor…" durumunda kilitliyordu.
+const STORAGE_OPERATION_TIMEOUT_MS = 45_000;
+
+async function sendWithTimeout<T>(
+  operation: string,
+  run: (abortSignal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), STORAGE_OPERATION_TIMEOUT_MS);
+  try {
+    return await run(controller.signal);
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(`${operation} 45 saniye içinde tamamlanamadı.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Path traversal koruması: yalnızca güvenli üretilmiş key kabul edilir. */
@@ -58,26 +81,33 @@ function assertSafeKey(key: string) {
 
 export async function uploadObject(key: string, body: Buffer, contentType: string): Promise<void> {
   assertSafeKey(key);
-  await getClient().send(
-    new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET,
-      Key: key,
-      Body: body,
-      ContentType: contentType,
-      CacheControl: 'public, max-age=31536000, immutable',
-    }),
+  const command = new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+    CacheControl: 'public, max-age=31536000, immutable',
+  });
+  await sendWithTimeout('Görsel yükleme', (abortSignal) =>
+    getClient().send(command, { abortSignal }),
   );
 }
 
 export async function deleteObject(key: string): Promise<void> {
   assertSafeKey(key);
-  await getClient().send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }));
+  const command = new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key });
+  await sendWithTimeout('Görsel silme', (abortSignal) =>
+    getClient().send(command, { abortSignal }),
+  );
 }
 
 export async function objectExists(key: string): Promise<boolean> {
   assertSafeKey(key);
   try {
-    await getClient().send(new HeadObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key }));
+    const command = new HeadObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key });
+    await sendWithTimeout('Görsel kontrolü', (abortSignal) =>
+      getClient().send(command, { abortSignal }),
+    );
     return true;
   } catch {
     return false;

@@ -36,6 +36,39 @@ const STORAGE_MISSING_MSG =
 const TRANSPORT_ERROR_MSG =
   'Yükleme tamamlanamadı. Dosya boyutunu ve internet bağlantınızı kontrol edip yeniden deneyin.';
 
+// UI timeout — server işlemini fiziksel iptal etmez (asıl iptal R2 tarafındaki
+// AbortController'da); yalnızca arayüzün sonsuza dek kilitlenmesini önler.
+const CLIENT_UPLOAD_TIMEOUT_MS = 75_000;
+const CLIENT_TIMEOUT_MSG =
+  'Yükleme 75 saniye içinde tamamlanamadı. İşlem durduruldu; sayfayı yenileyip tekrar deneyin.';
+
+class UploadTimeoutError extends Error {
+  constructor() {
+    super('client upload timeout');
+    this.name = 'UploadTimeoutError';
+  }
+}
+
+async function uploadWithUiTimeout(
+  fd: FormData,
+): Promise<Awaited<ReturnType<typeof uploadProjectMedia>>> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      uploadProjectMedia(fd),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new UploadTimeoutError()), CLIENT_UPLOAD_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function uploadErrorMessage(err: unknown): string {
+  return err instanceof UploadTimeoutError ? CLIENT_TIMEOUT_MSG : TRANSPORT_ERROR_MSG;
+}
+
 export interface MediaItem {
   id: string;
   role: 'COVER' | 'MATTERPORT_POSTER' | 'GALLERY';
@@ -251,10 +284,10 @@ function SingleSlot({
       fd.set('projectId', projectId);
       fd.set('role', role);
       fd.set('file', files[0]);
-      const res = await uploadProjectMedia(fd);
+      const res = await uploadWithUiTimeout(fd);
       onChanged(res.ok ? undefined : res.error);
-    } catch {
-      onChanged(TRANSPORT_ERROR_MSG);
+    } catch (err) {
+      onChanged(uploadErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -354,7 +387,7 @@ export function MediaManager({
         fd.set('projectId', projectId);
         fd.set('role', 'GALLERY');
         fd.set('file', files[i]);
-        const res = await uploadProjectMedia(fd);
+        const res = await uploadWithUiTimeout(fd);
         if (!res.ok) {
           // Kalan dosyalar gönderilmez; action'ın güvenli mesajı gösterilir
           setError(`${files[i].name.slice(0, 80)}: ${res.error}`);
@@ -362,8 +395,8 @@ export function MediaManager({
         }
         setUploadCount({ done: i + 1, total: files.length });
       }
-    } catch {
-      setError(TRANSPORT_ERROR_MSG);
+    } catch (err) {
+      setError(uploadErrorMessage(err));
     } finally {
       setGalleryBusy(false);
       setUploadCount(null);

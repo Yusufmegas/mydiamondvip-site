@@ -311,7 +311,23 @@ export async function duplicateProject(projectId: unknown): Promise<ActionResult
 // ---------------- Medya işlemleri ----------------
 
 export async function uploadProjectMedia(formData: FormData): Promise<ActionResult<{ mediaId: string }>> {
+  // Aşama logları: nerede takıldığı görülebilsin (credential/dosya içeriği ASLA loglanmaz)
+  const uploadId = randomUUID().slice(0, 8);
+  const t0 = Date.now();
+  let stage = 'started';
+  let stageStart = t0;
+  const mark = (next: string, withDuration = false) => {
+    const now = Date.now();
+    console.log(
+      `[media-upload:${uploadId}] ${next}${withDuration ? ` durationMs=${now - stageStart}` : ''}`,
+    );
+    stage = next;
+    stageStart = now;
+  };
+  mark('started');
+
   const admin = await requireAdmin();
+  mark('auth-ok');
 
   const meta = uploadMetaSchema.safeParse({
     projectId: formData.get('projectId'),
@@ -333,18 +349,37 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
     const db = getDb();
     const project = await db.project.findUnique({ where: { id: meta.data.projectId }, include: { media: true } });
     if (!project) return { ok: false, error: 'Proje bulunamadı.' };
+    mark('project-found');
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const processed = await validateAndProcessImage(buffer); // gerçek içerik doğrulaması (sharp)
+    mark('image-processed', true);
 
     // Rastgele UUID tabanlı key — kullanıcı dosya adı asla key olmaz
     const baseKey = `projects/${project.id}/${randomUUID()}`;
     const mainKey = `${baseKey}.webp`;
     const thumbKey = `${baseKey}-thumb.webp`;
 
-    // 1) storage'a yükle — başarısızsa DB kaydı oluşturulmaz
-    await uploadObject(mainKey, processed.main, 'image/webp');
-    await uploadObject(thumbKey, processed.thumb, 'image/webp');
+    // 1) storage'a PARALEL yükle — ikisi de bitmeden DB kaydı oluşturulmaz;
+    //    biri başarısızsa diğerinin dosyası orphan kalmasın diye ikisi de temizlenir
+    const uploadsStart = Date.now();
+    try {
+      await Promise.all([
+        uploadObject(mainKey, processed.main, 'image/webp').then(() =>
+          console.log(`[media-upload:${uploadId}] main-uploaded durationMs=${Date.now() - uploadsStart}`),
+        ),
+        uploadObject(thumbKey, processed.thumb, 'image/webp').then(() =>
+          console.log(`[media-upload:${uploadId}] thumb-uploaded durationMs=${Date.now() - uploadsStart}`),
+        ),
+      ]);
+    } catch (uploadErr) {
+      stage = 'storage-upload';
+      await deleteObject(mainKey).catch(() => {});
+      await deleteObject(thumbKey).catch(() => {});
+      throw uploadErr;
+    }
+    stage = 'storage-uploaded';
+    stageStart = Date.now();
 
     try {
       const created = await db.$transaction(async (tx) => {
@@ -380,6 +415,7 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
           },
         });
       });
+      mark('db-created', true);
 
       // Tekil rollerde eski dosyaları storage'dan temizle (best-effort)
       if (meta.data.role !== 'GALLERY') {
@@ -395,7 +431,9 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
         projectId: project.id,
         role: meta.data.role,
       });
+      mark('audit-written');
       if (project.status === 'PUBLISHED') revalidatePublic([project.slug]);
+      console.log(`[media-upload:${uploadId}] completed totalMs=${Date.now() - t0}`);
       return { ok: true, data: { mediaId: created.id } };
     } catch (dbErr) {
       // DB başarısız → orphan object'leri temizlemeye çalış
@@ -404,10 +442,13 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
       throw dbErr;
     }
   } catch (err) {
+    console.error(
+      `[media-upload:${uploadId}] failed stage=${stage} durationMs=${Date.now() - stageStart} totalMs=${Date.now() - t0}`,
+      err,
+    );
     if (err instanceof MediaValidationError) return { ok: false, error: err.message };
     if (err instanceof StorageConfigurationError) return { ok: false, error: STORAGE_MISSING_MSG };
     // Upload yolunda ham hata mesajı (S3 SDK/endpoint detayı) kullanıcıya SIZDIRILMAZ
-    console.error('[uploadProjectMedia] hata:', err);
     return { ok: false, error: 'Görsel yüklenemedi. Lütfen tekrar deneyin.' };
   }
 }
