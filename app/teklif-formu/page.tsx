@@ -30,7 +30,10 @@ export default function Page() {
             </ul>
             <div className="trust-contact">
               <span>Formu kullanmak istemezseniz:</span>
-              <a href={contact.phoneHref}>{contact.phone}</a>
+              <a href={contact.phoneHref}>{contact.phoneDisplay}</a>
+              <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer">
+                WhatsApp: {contact.whatsappDisplay}
+              </a>
               <a href={contact.emailHref}>{contact.email}</a>
             </div>
           </aside>

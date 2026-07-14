@@ -22,7 +22,7 @@ export default function ServiceTemplate({ service }: { service: Service }) {
           provider: {
             '@type': 'AutoRepair',
             name: contact.companyName,
-            telephone: contact.phone,
+            telephone: contact.phoneE164,
             areaServed: contact.city,
           },
           areaServed: contact.city,

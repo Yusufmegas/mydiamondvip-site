@@ -7,7 +7,7 @@ import { whatsappMessages } from '@/data/siteContent';
 export const metadata: Metadata = {
   title: 'İletişim — MyDiamondVIP İstanbul',
   description:
-    'MyDiamondVIP iletişim: +90 532 543 69 69 · info@mydiamondvip.com · İstanbul. VIP araç dizayn projeleriniz için arayın veya WhatsApp ile yazın.',
+    'MyDiamondVIP iletişim: Sabit hat 0212 598 88 22 · WhatsApp destek 0536 824 81 65 · info@mydiamondvip.com · Küçükçekmece / İstanbul. VIP araç dizayn projeleriniz için arayın veya WhatsApp ile yazın.',
   alternates: { canonical: '/iletisim' },
 };
 
@@ -23,17 +23,53 @@ export default function Page() {
         <div className="container split-2">
           <div>
             <SectionHead kicker="Ulaşın" title="İletişim Bilgileri" />
-            <ul className="dash-list" style={{ fontSize: 17 }} data-reveal-group>
-              <li data-reveal><a href={contact.phoneHref}>{contact.phone}</a></li>
-              <li data-reveal><a href={contact.emailHref}>{contact.email}</a></li>
-              <li data-reveal>{contact.address}, {contact.city}</li>
-              <li data-reveal>{contact.workHours}</li>
-            </ul>
+            <div className="contact-blocks" data-reveal-group>
+              <div className="contact-block" data-reveal>
+                <span className="contact-block-label">Sabit Hat</span>
+                <span className="contact-block-value">
+                  <a href={contact.phoneHref}>{contact.phoneDisplay}</a>
+                </span>
+              </div>
+              <div className="contact-block" data-reveal>
+                <span className="contact-block-label">WhatsApp Destek</span>
+                <span className="contact-block-value">
+                  <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer">
+                    {contact.whatsappDisplay}
+                  </a>
+                </span>
+              </div>
+              <div className="contact-block" data-reveal>
+                <span className="contact-block-label">E-posta</span>
+                <span className="contact-block-value">
+                  <a href={contact.emailHref}>{contact.email}</a>
+                </span>
+              </div>
+              <div className="contact-block" data-reveal>
+                <span className="contact-block-label">Çalışma Saatleri</span>
+                <span className="contact-block-value">{contact.workHours}</span>
+              </div>
+              <div className="contact-block contact-block-wide" data-reveal>
+                <span className="contact-block-label">Adres</span>
+                <span className="contact-block-value">
+                  {contact.address}
+                  <br />
+                  {contact.postalCode} {contact.district} / {contact.city}
+                </span>
+              </div>
+            </div>
             <div className="cta-row" style={{ marginTop: 34 }} data-reveal>
-              <a className="cta cta-primary" href={whatsappLink(whatsappMessages.general)} target="_blank" rel="noopener noreferrer">
-                WhatsApp ile Yazın
+              <a
+                className="cta cta-primary"
+                href={whatsappLink(whatsappMessages.general)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp Destek
               </a>
-              <a className="cta" href={contact.phoneHref}>Hemen Ara</a>
+              <a className="cta" href={contact.phoneHref}>Sabit Hattı Ara</a>
+              <a className="cta" href={contact.mapUrl} target="_blank" rel="noopener noreferrer">
+                Yol Tarifi
+              </a>
             </div>
           </div>
           <div>

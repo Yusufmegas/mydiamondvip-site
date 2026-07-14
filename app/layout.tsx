@@ -63,13 +63,15 @@ export default function RootLayout({
             name: contact.companyName,
             description: contact.shortDescription,
             url: contact.siteUrl,
-            telephone: contact.phone,
+            telephone: contact.phoneE164, // işletme sabit hattı — WhatsApp numarası buraya YAZILMAZ
             email: contact.email,
             image: `${contact.siteUrl}/poster.webp`,
             address: {
               "@type": "PostalAddress",
               streetAddress: contact.address,
-              addressLocality: contact.city,
+              postalCode: contact.postalCode,
+              addressLocality: contact.district,
+              addressRegion: contact.city,
               addressCountry: contact.country,
             },
             areaServed: contact.city,

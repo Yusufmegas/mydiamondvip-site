@@ -30,7 +30,10 @@ export default function Page() {
             </ul>
             <div className="trust-contact">
               <span>Çalışma saatleri: {contact.workHours}</span>
-              <a href={contact.phoneHref}>{contact.phone}</a>
+              <a href={contact.phoneHref}>{contact.phoneDisplay}</a>
+              <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer">
+                WhatsApp: {contact.whatsappDisplay}
+              </a>
             </div>
           </aside>
         </div>

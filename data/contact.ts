@@ -1,22 +1,39 @@
 // TEK KAYNAK iletişim verisi — adres/telefon değişikliği yalnızca burada yapılır.
-// Eski kaynaklarda farklı adresler göründüğü için adres tek yerden yönetilir.
+// Bileşenlerde telefon/adres HARD-CODE edilmez; her zaman bu dosyadan okunur.
+
+const fullAddress = 'Fatih Mahallesi, Reşatbey Sokak No: 8/A, 34325 Küçükçekmece / İstanbul';
 
 export const contact = {
   companyName: 'MyDiamondVIP',
   legalName: 'MyDiamondVIP Araç Tasarım',
-  phone: '+90 532 543 69 69',
-  phoneHref: 'tel:+905325436969',
-  whatsappNumber: '905325436969',
-  whatsappHref: 'https://wa.me/905325436969',
+
+  // Sabit hat (işletme telefonu)
+  phone: '+90 212 598 88 22',
+  phoneDisplay: '0212 598 88 22',
+  phoneE164: '+902125988822', // JSON-LD telephone alanı için boşluksuz biçim
+  phoneHref: 'tel:+902125988822',
+
+  // WhatsApp destek ve fiyat teklifi hattı
+  whatsappDisplay: '0536 824 81 65',
+  whatsappInternational: '+90 536 824 81 65',
+  whatsappNumber: '905368248165',
+  whatsappHref: 'https://wa.me/905368248165',
+
   email: 'info@mydiamondvip.com',
   emailHref: 'mailto:info@mydiamondvip.com',
-  // TODO: Kesin adres onaylandığında yalnızca bu iki satırı güncelleyin.
-  address: 'Hadımköy, Akpınar Sanayi Bölgesi',
+
+  address: 'Fatih Mahallesi, Reşatbey Sokak No: 8/A',
+  postalCode: '34325',
+  district: 'Küçükçekmece',
   city: 'İstanbul',
   country: 'TR',
-  mapUrl: 'https://maps.google.com/?q=MyDiamondVIP',
+
+  // Doğrudan tam adresi Google Maps'te açar (genel işletme araması değil)
+  mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`,
+
   workHours: 'Pazartesi – Cumartesi, 09:00 – 19:00',
-  siteUrl: 'https://www.mydiamondvip.com',
+  siteUrl: 'https://mydiamondvip.com',
+
   // TODO: Gerçek sosyal medya hesap linkleriyle doğrulayın.
   social: {
     instagram: 'https://www.instagram.com/mydiamondvip',

@@ -101,7 +101,7 @@ export default function Header() {
           <a className="cta" href={whatsappLink(whatsappMessages.general)} target="_blank" rel="noopener noreferrer">
             WhatsApp
           </a>
-          <a className="mobile-phone" href={contact.phoneHref}>{contact.phone}</a>
+          <a className="mobile-phone" href={contact.phoneHref}>{contact.phoneDisplay}</a>
         </div>
       </div>
     </header>

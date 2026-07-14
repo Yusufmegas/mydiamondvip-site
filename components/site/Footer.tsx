@@ -83,9 +83,14 @@ export default function Footer() {
         <div>
           <h3>İletişim</h3>
           <ul className="footer-contact">
-            <li><a href={contact.phoneHref}>{contact.phone}</a></li>
+            <li><a href={contact.phoneHref}>{contact.phoneDisplay}</a></li>
+            <li>
+              <a href={contact.whatsappHref} target="_blank" rel="noopener noreferrer">
+                WhatsApp: {contact.whatsappDisplay}
+              </a>
+            </li>
             <li><a href={contact.emailHref}>{contact.email}</a></li>
-            <li>{contact.address}, {contact.city}</li>
+            <li>{contact.address}, {contact.postalCode} {contact.district} / {contact.city}</li>
             <li>{contact.workHours}</li>
           </ul>
           <ul className="footer-links">
