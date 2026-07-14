@@ -21,11 +21,13 @@ export function ProjectForm({
   projectId,
   initial,
   media,
+  storageConfigured = false,
   statusLabel,
 }: {
   projectId?: string;
   initial: ProjectFormValues;
   media: MediaItem[];
+  storageConfigured?: boolean;
   statusLabel?: string;
 }) {
   const router = useRouter();
@@ -222,7 +224,7 @@ export function ProjectForm({
       {/* --- 4. Görseller --- */}
       <div className="adm-card" style={{ marginTop: 14, display: tab === 3 ? 'block' : 'none' }}>
         {projectId ? (
-          <MediaManager projectId={projectId} media={media} />
+          <MediaManager projectId={projectId} media={media} storageConfigured={storageConfigured} />
         ) : (
           <p className="adm-hint">
             Görsel yüklemek için önce taslağı kaydedin — kayıt sonrası bu sekmeden kapak, poster ve galeri yönetilir.

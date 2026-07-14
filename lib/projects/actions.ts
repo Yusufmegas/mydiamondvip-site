@@ -21,7 +21,15 @@ import {
 } from '@/lib/validation/project';
 import { normalizeMatterportUrl } from '@/lib/projects/matterport';
 import { validateAndProcessImage, orientationFromDims, MediaValidationError } from '@/lib/media/process';
-import { uploadObject, deleteObject, buildPublicUrl, isStorageConfigured } from '@/lib/storage';
+import {
+  uploadObject,
+  deleteObject,
+  buildPublicUrl,
+  isStorageConfigured,
+  StorageConfigurationError,
+} from '@/lib/storage';
+
+const STORAGE_MISSING_MSG = 'Görsel depolama yapılandırılmamış. S3/R2 bağlantısını tamamlayın.';
 
 export type ActionResult<T = undefined> =
   | { ok: true; data?: T }
@@ -318,10 +326,7 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
     return { ok: false, error: 'Yalnızca JPEG, PNG ve WebP kabul edilir.' };
   }
   if (!isStorageConfigured()) {
-    return {
-      ok: false,
-      error: 'Object storage yapılandırılmamış — S3 değişkenlerini tanımlayın (ADMIN_SETUP.md).',
-    };
+    return { ok: false, error: STORAGE_MISSING_MSG };
   }
 
   try {
@@ -400,7 +405,10 @@ export async function uploadProjectMedia(formData: FormData): Promise<ActionResu
     }
   } catch (err) {
     if (err instanceof MediaValidationError) return { ok: false, error: err.message };
-    return { ok: false, error: friendlyDbError(err) };
+    if (err instanceof StorageConfigurationError) return { ok: false, error: STORAGE_MISSING_MSG };
+    // Upload yolunda ham hata mesajı (S3 SDK/endpoint detayı) kullanıcıya SIZDIRILMAZ
+    console.error('[uploadProjectMedia] hata:', err);
+    return { ok: false, error: 'Görsel yüklenemedi. Lütfen tekrar deneyin.' };
   }
 }
 

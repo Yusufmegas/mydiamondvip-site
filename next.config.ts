@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.dirname(fileURLToPath(import.meta.url)),
   },
+  experimental: {
+    serverActions: {
+      // Uygulama kuralı 20 MB dosya; multipart ek yükü için pay bırakılır.
+      // Sınırsız YAPMAYIN — DoS yüzeyi açar.
+      bodySizeLimit: "25mb",
+    },
+  },
   async headers() {
     // /codec ve /fallback immutable — unutulursa CDN her Range isteğini
     // origin'e revalidate eder → stall patlaması (spec §1.6)

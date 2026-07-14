@@ -64,5 +64,6 @@ export const uploadMetaSchema = z.object({
 });
 
 export const ALLOWED_UPLOAD_MIME = ['image/jpeg', 'image/png', 'image/webp'] as const;
-export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20 MB
+// Tek kaynak: lib/media/constants.ts (client-safe) — buradan yalnızca re-export edilir.
+export { MAX_UPLOAD_BYTES } from '@/lib/media/constants';
 export const MAX_INPUT_PIXELS = 64_000_000; // ~64 MP güvenli sınır

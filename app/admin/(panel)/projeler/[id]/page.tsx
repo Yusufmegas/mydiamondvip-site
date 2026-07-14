@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { requireAdminPage } from '@/lib/auth/guard';
 import { getProjectForAdmin } from '@/lib/projects/admin-repository';
+import { isStorageConfigured } from '@/lib/storage';
 import { ProjectForm } from '@/components/admin/projects/ProjectForm';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import type { MediaItem } from '@/components/admin/media/MediaManager';
@@ -35,6 +36,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
       <ProjectForm
         projectId={project.id}
         media={media}
+        storageConfigured={isStorageConfigured()}
         statusLabel={project.status}
         initial={{
           title: project.title,

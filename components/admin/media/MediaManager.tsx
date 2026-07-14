@@ -28,6 +28,13 @@ import {
   updateMediaMeta,
   reorderGallery,
 } from '@/lib/projects/actions';
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/media/constants';
+
+const STORAGE_MISSING_MSG =
+  'Görsel depolama yapılandırılmamış. Yeni görsel yüklemek için S3/R2 bağlantısını tamamlayın.';
+// Transport/promise reddi: iç hata detayı kullanıcıya ASLA basılmaz.
+const TRANSPORT_ERROR_MSG =
+  'Yükleme tamamlanamadı. Dosya boyutunu ve internet bağlantınızı kontrol edip yeniden deneyin.';
 
 export interface MediaItem {
   id: string;
@@ -46,45 +53,54 @@ function UploadZone({
   label,
   multiple,
   busy,
+  disabled,
   onFiles,
 }: {
   label: string;
   multiple?: boolean;
   busy: boolean;
+  disabled?: boolean;
   onFiles: (files: File[]) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const inactive = disabled || busy;
   return (
     <div
       className={`adm-drop${over ? ' dragover' : ''}`}
       role="button"
-      tabIndex={0}
+      tabIndex={disabled ? -1 : 0}
       aria-label={label}
-      onClick={() => inputRef.current?.click()}
+      aria-disabled={disabled || undefined}
+      style={disabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+      onClick={() => {
+        if (!inactive) inputRef.current?.click();
+      }}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click();
+        if (!inactive && (e.key === 'Enter' || e.key === ' ')) inputRef.current?.click();
       }}
       onDragOver={(e) => {
         e.preventDefault();
-        setOver(true);
+        if (!inactive) setOver(true);
       }}
       onDragLeave={() => setOver(false)}
       onDrop={(e) => {
         e.preventDefault();
         setOver(false);
-        onFiles(Array.from(e.dataTransfer.files));
+        if (!inactive) onFiles(Array.from(e.dataTransfer.files));
       }}
     >
-      {busy ? 'Yükleniyor…' : label}
+      {busy ? 'Yükleniyor…' : disabled ? STORAGE_MISSING_MSG : label}
       <input
         ref={inputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         multiple={multiple}
+        disabled={disabled}
         hidden
         onChange={(e) => {
           onFiles(Array.from(e.target.files ?? []));
+          // Aynı dosya yeniden seçilebilsin (başarı VEYA hata sonrası)
           e.target.value = '';
         }}
       />
@@ -205,26 +221,43 @@ function SingleSlot({
   role,
   item,
   projectId,
+  storageConfigured,
   onChanged,
 }: {
   title: string;
   role: 'COVER' | 'MATTERPORT_POSTER';
   item: MediaItem | undefined;
   projectId: string;
+  storageConfigured: boolean;
   onChanged: (msg?: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
 
   async function upload(files: File[]) {
     if (!files[0] || busy) return;
+    // İstek gönderilmeden önce erken kontroller
+    if (!storageConfigured) {
+      onChanged(STORAGE_MISSING_MSG);
+      return;
+    }
+    if (files[0].size > MAX_UPLOAD_BYTES) {
+      onChanged(`Dosya en fazla ${MAX_UPLOAD_LABEL} olabilir.`);
+      return;
+    }
     setBusy(true);
-    const fd = new FormData();
-    fd.set('projectId', projectId);
-    fd.set('role', role);
-    fd.set('file', files[0]);
-    const res = await uploadProjectMedia(fd);
-    setBusy(false);
-    onChanged(res.ok ? undefined : res.error);
+    onChanged(undefined); // önceki hatayı temizle
+    try {
+      const fd = new FormData();
+      fd.set('projectId', projectId);
+      fd.set('role', role);
+      fd.set('file', files[0]);
+      const res = await uploadProjectMedia(fd);
+      onChanged(res.ok ? undefined : res.error);
+    } catch {
+      onChanged(TRANSPORT_ERROR_MSG);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -254,17 +287,30 @@ function SingleSlot({
           </div>
           <MediaMetaEditor item={item} onDone={onChanged} />
           <div style={{ padding: '0 8px 8px' }}>
-            <UploadZone label="Değiştir (yeni dosya seç)" busy={busy} onFiles={upload} />
+            <UploadZone label="Değiştir (yeni dosya seç)" busy={busy} disabled={!storageConfigured} onFiles={upload} />
           </div>
         </div>
       ) : (
-        <UploadZone label={`${title} yükle (JPEG/PNG/WebP, maks 20MB)`} busy={busy} onFiles={upload} />
+        <UploadZone
+          label={`${title} yükle (JPEG/PNG/WebP, maks ${MAX_UPLOAD_LABEL})`}
+          busy={busy}
+          disabled={!storageConfigured}
+          onFiles={upload}
+        />
       )}
     </div>
   );
 }
 
-export function MediaManager({ projectId, media }: { projectId: string; media: MediaItem[] }) {
+export function MediaManager({
+  projectId,
+  media,
+  storageConfigured,
+}: {
+  projectId: string;
+  media: MediaItem[];
+  storageConfigured: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [uploadCount, setUploadCount] = useState<{ done: number; total: number } | null>(null);
@@ -286,24 +332,43 @@ export function MediaManager({ projectId, media }: { projectId: string; media: M
 
   async function uploadGallery(files: File[]) {
     if (galleryBusy || files.length === 0) return;
+    // İstek gönderilmeden önce erken kontroller
+    if (!storageConfigured) {
+      setError(STORAGE_MISSING_MSG);
+      return;
+    }
+    const oversized = files.filter((f) => f.size > MAX_UPLOAD_BYTES);
+    if (oversized.length > 0) {
+      setError(
+        `Şu dosyalar ${MAX_UPLOAD_LABEL} sınırını aşıyor, hiçbir yükleme başlatılmadı: ` +
+          oversized.map((f) => f.name.slice(0, 80)).join(', '),
+      );
+      return;
+    }
     setGalleryBusy(true);
     setError(null);
     setUploadCount({ done: 0, total: files.length });
-    for (let i = 0; i < files.length; i++) {
-      const fd = new FormData();
-      fd.set('projectId', projectId);
-      fd.set('role', 'GALLERY');
-      fd.set('file', files[i]);
-      const res = await uploadProjectMedia(fd);
-      if (!res.ok) {
-        setError(`${files[i].name}: ${res.error}`);
-        break;
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const fd = new FormData();
+        fd.set('projectId', projectId);
+        fd.set('role', 'GALLERY');
+        fd.set('file', files[i]);
+        const res = await uploadProjectMedia(fd);
+        if (!res.ok) {
+          // Kalan dosyalar gönderilmez; action'ın güvenli mesajı gösterilir
+          setError(`${files[i].name.slice(0, 80)}: ${res.error}`);
+          break;
+        }
+        setUploadCount({ done: i + 1, total: files.length });
       }
-      setUploadCount({ done: i + 1, total: files.length });
+    } catch {
+      setError(TRANSPORT_ERROR_MSG);
+    } finally {
+      setGalleryBusy(false);
+      setUploadCount(null);
+      router.refresh();
     }
-    setGalleryBusy(false);
-    setUploadCount(null);
-    router.refresh();
   }
 
   async function onDragEnd(e: DragEndEvent) {
@@ -317,13 +382,26 @@ export function MediaManager({ projectId, media }: { projectId: string; media: M
 
   return (
     <div>
+      {!storageConfigured && (
+        <p className="adm-error" role="alert" style={{ marginBottom: 12 }}>
+          {STORAGE_MISSING_MSG}
+        </p>
+      )}
       <div className="adm-grid-2">
-        <SingleSlot title="Kapak Görseli" role="COVER" item={cover} projectId={projectId} onChanged={refresh} />
+        <SingleSlot
+          title="Kapak Görseli"
+          role="COVER"
+          item={cover}
+          projectId={projectId}
+          storageConfigured={storageConfigured}
+          onChanged={refresh}
+        />
         <SingleSlot
           title="Matterport Poster Görseli"
           role="MATTERPORT_POSTER"
           item={poster}
           projectId={projectId}
+          storageConfigured={storageConfigured}
           onChanged={refresh}
         />
       </div>
@@ -334,6 +412,7 @@ export function MediaManager({ projectId, media }: { projectId: string; media: M
           label="Galeriye görsel ekle — çoklu seçim ve sürükle-bırak desteklenir"
           multiple
           busy={galleryBusy}
+          disabled={!storageConfigured}
           onFiles={uploadGallery}
         />
         {uploadCount && (
