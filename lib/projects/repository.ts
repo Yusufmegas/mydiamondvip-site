@@ -1,10 +1,11 @@
 // Public proje deposu — TEK veri erişim noktası.
-// Kaynak seçimi:
-//   - DATABASE_URL varsa → PostgreSQL (yalnızca PUBLISHED kayıtlar)
-//   - DATABASE_URL yoksa:
-//       - build aşaması veya development → data/projects.ts statik fallback
-//         (mevcut sitenin DB kurulmadan çalışmaya devam etmesi için)
-//       - production RUNTIME → açık DbConfigurationError (sessiz statik düşüş YOK)
+// Kaynak seçimi (sıra önemli):
+//   - build/prerender aşaması → HER ZAMAN data/projects.ts statik fallback
+//     (Railway build ortamına DATABASE_URL verse bile bağlanılmaz; migration
+//     henüz uygulanmamış veya private DB ağı erişilemez olabilir)
+//   - runtime + DATABASE_URL varsa → PostgreSQL (yalnızca PUBLISHED kayıtlar)
+//   - development + DB yoksa → statik fallback
+//   - production RUNTIME + DB yoksa → açık DbConfigurationError (sessiz düşüş YOK)
 import 'server-only';
 import { getDb, isDbConfigured, isBuildPhase, DbConfigurationError } from '@/lib/db';
 import { projects as staticProjects } from '@/data/projects';
@@ -12,11 +13,24 @@ import { dbProjectToView, staticProjectToView } from './mappers';
 import type { ProjectView } from './types';
 
 function assertRuntimeSource(): 'db' | 'static' {
-  if (isDbConfigured()) return 'db';
-  if (isBuildPhase() || process.env.NODE_ENV !== 'production') {
+  // Next.js build/prerender sırasında Railway DATABASE_URL tanımlı olsa bile
+  // veritabanına bağlanma. Migration henüz pre-deploy aşamasında uygulanmamış
+  // olabilir ve build ortamı private DB ağına erişemeyebilir.
+  if (isBuildPhase()) {
     return 'static';
   }
-  // Production çalışma zamanı + DB yok → açık yapılandırma hatası
+
+  // Gerçek runtime'da DATABASE_URL varsa PostgreSQL kullan.
+  if (isDbConfigured()) {
+    return 'db';
+  }
+
+  // Local development DB olmadan statik veriyle çalışabilir.
+  if (process.env.NODE_ENV !== 'production') {
+    return 'static';
+  }
+
+  // Production runtime'da DB eksikse sessiz fallback yapma.
   throw new DbConfigurationError();
 }
 
