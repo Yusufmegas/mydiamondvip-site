@@ -249,7 +249,26 @@ h3 { font-size: clamp(17px, 1.6vw, 21px); }
   gap: 28px;
 }
 
-.header-logo { flex: none; }
+.header-logo { flex: none; display: flex; align-items: center; }
+
+/* Marka logosu — oran korunur (width:auto), header yüksekliği değişmez */
+.header-logo-img {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .header-logo-img { height: 28px; }
+}
+
+.footer-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
 .main-nav { flex: 1; }
 
 .main-nav > ul {
@@ -1960,8 +1979,7 @@ html.header-light .site-header {
   border-bottom-color: rgba(24, 24, 24, 0.1);
 }
 
-html.header-light .site-header .brand-mark { color: var(--text-dark); }
-html.header-light .site-header .brand-mark span { color: var(--gold-dark); }
+/* (Header artık görsel logo kullanır — metin brand-mark kuralları kaldırıldı) */
 
 html.header-light .main-nav a { color: var(--text-muted-dark); }
 html.header-light .main-nav a:hover,
@@ -1995,8 +2013,6 @@ html.menu-open .site-header {
   border-bottom-color: var(--hairline);
 }
 
-html.menu-open .site-header .brand-mark { color: #efe9df; }
-html.menu-open .site-header .brand-mark span { color: var(--gold); }
 html.menu-open .menu-toggle { border-color: rgba(239, 233, 223, 0.2); }
 html.menu-open .menu-toggle span { background: #efe9df; }
 

@@ -1,8 +1,10 @@
 // Panel chrome — her istek sunucuda requireAdminPage'den geçer (proxy'ye ek
 // gerçek yetki katmanı). Giriş sayfası bu grubun dışındadır.
 import Link from 'next/link';
+import Image from 'next/image';
 import { requireAdminPage } from '@/lib/auth/guard';
 import { LogoutButton } from '@/components/admin/LogoutButton';
+import { brand } from '@/data/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +15,14 @@ export default async function AdminPanelLayout({ children }: { children: React.R
     <div className="adm-shell">
       <aside className="adm-side">
         <div className="adm-brand">
-          MYDIAMOND<span>VIP</span> PANEL
+          <Image
+            src={brand.logo}
+            alt="MyDiamondVIP"
+            width={brand.logoWidth}
+            height={brand.logoHeight}
+            className="adm-brand-logo"
+          />
+          <span className="adm-brand-suffix">PANEL</span>
         </div>
         <Link className="adm-nav-link" href="/admin">Genel Bakış</Link>
         <Link className="adm-nav-link" href="/admin/projeler">Projeler</Link>

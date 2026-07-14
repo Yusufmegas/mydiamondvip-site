@@ -5,6 +5,7 @@
 // grain dokusu globals.css'te tanımlıdır.
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,6 +13,7 @@ import { useGSAP } from '@gsap/react';
 import { footerNav } from '@/data/navigation';
 import { contact, whatsappLink } from '@/data/contact';
 import { whatsappMessages } from '@/data/siteContent';
+import { brand } from '@/data/brand';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -46,7 +48,13 @@ export default function Footer() {
     <footer className="site-footer" ref={scope}>
       <div className="container footer-grid">
         <div className="footer-brand">
-          <div className="brand-mark">MYDIAMOND<span>VIP</span></div>
+          <Image
+            src={brand.logo}
+            alt="MyDiamondVIP"
+            width={brand.logoWidth}
+            height={brand.logoHeight}
+            className="footer-logo-img"
+          />
           <p>{contact.shortDescription}</p>
           <a
             className="cta cta-small"

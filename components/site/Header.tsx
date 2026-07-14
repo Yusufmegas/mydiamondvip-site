@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { mainNav } from '@/data/navigation';
 import { contact, whatsappLink } from '@/data/contact';
 import { whatsappMessages } from '@/data/siteContent';
+import { brand } from '@/data/brand';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -24,8 +26,15 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link href="/" className="brand-mark header-logo" aria-label="MyDiamondVIP ana sayfa">
-          MYDIAMOND<span>VIP</span>
+        <Link href="/" className="header-logo" aria-label="MyDiamondVIP ana sayfa">
+          <Image
+            src={brand.logo}
+            alt="MyDiamondVIP"
+            width={brand.logoWidth}
+            height={brand.logoHeight}
+            priority
+            className="header-logo-img"
+          />
         </Link>
 
         <nav className="main-nav" aria-label="Ana menü">

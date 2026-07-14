@@ -6,6 +6,7 @@ import Footer from "@/components/site/Footer";
 import ScrollFx from "@/components/site/ScrollFx";
 import { JsonLd } from "@/components/site/Shared";
 import { contact } from "@/data/contact";
+import { brand } from "@/data/brand";
 
 const manrope = Manrope({
   variable: "--font-sans",
@@ -66,6 +67,7 @@ export default function RootLayout({
             telephone: contact.phoneE164, // işletme sabit hattı — WhatsApp numarası buraya YAZILMAZ
             email: contact.email,
             image: `${contact.siteUrl}/poster.webp`,
+            logo: `${contact.siteUrl}${brand.logo}`,
             address: {
               "@type": "PostalAddress",
               streetAddress: contact.address,

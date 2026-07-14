@@ -31,6 +31,9 @@ body:has(.adm-root) .floating-wa {
 }
 
 .adm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 600;
   letter-spacing: 0.18em;
   font-size: 12px;
@@ -38,7 +41,16 @@ body:has(.adm-root) .floating-wa {
   padding: 8px 10px 20px;
 }
 
-.adm-brand span { color: #c99b5f; }
+.adm-brand-logo { height: 24px; width: auto; object-fit: contain; display: block; }
+.adm-brand-suffix { color: #c99b5f; }
+
+.adm-login-logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 10px;
+}
 
 .adm-nav-link {
   display: block;
