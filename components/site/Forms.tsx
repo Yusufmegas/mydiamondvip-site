@@ -6,12 +6,8 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { contact, whatsappLink } from '@/data/contact';
-import {
-  quoteServiceCategories,
-  vehicleTypes,
-  chassisTypes,
-  usagePurposes,
-} from '@/data/quoteServices';
+import { quoteServiceCategories, chassisTypes, usagePurposes } from '@/data/quoteServices';
+import { vehicleBrands, OTHER_OPTION } from '@/data/quoteVehicles';
 
 // ---------- WhatsApp mesaj yardımcıları ----------
 
@@ -72,50 +68,144 @@ function SectionTitle({ no, title }: { no: string; title: string }) {
   );
 }
 
+// ---------- Bağlı marka-model seçimi (QuoteForm + AppointmentForm ortak) ----------
+
+/** Submit sırasında FormData'dan gerçek marka/model değerini çözer:
+ *  "Diğer" seçildiyse kullanıcının elle yazdığı değer kullanılır. */
+export function resolveVehicleFields(g: (k: string) => string): { brand: string; model: string } {
+  const brandSel = g('brand');
+  const modelSel = g('model');
+  const brand = brandSel === OTHER_OPTION ? g('brandCustom') : brandSel;
+  const model = brandSel === OTHER_OPTION || modelSel === OTHER_OPTION ? g('modelCustom') : modelSel;
+  return { brand, model };
+}
+
+function VehicleBrandModelFields() {
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+
+  const models = useMemo(
+    () => vehicleBrands.find((b) => b.name === brand)?.models ?? [],
+    [brand],
+  );
+  const brandIsOther = brand === OTHER_OPTION;
+  const modelIsOther = model === OTHER_OPTION;
+
+  return (
+    <>
+      <label className="form-field">
+        <span>Araç Markası *</span>
+        <select
+          name="brand"
+          required
+          value={brand}
+          onChange={(e) => {
+            setBrand(e.target.value);
+            setModel(''); // marka değişince önceki model sıfırlanır
+          }}
+        >
+          <option value="" disabled>Marka seçiniz</option>
+          {vehicleBrands.map((b) => <option key={b.name} value={b.name}>{b.name}</option>)}
+        </select>
+      </label>
+
+      {!brandIsOther && (
+        <label className="form-field">
+          <span>Araç Modeli *</span>
+          <select
+            name="model"
+            required
+            value={model}
+            disabled={brand === ''}
+            aria-disabled={brand === ''}
+            onChange={(e) => setModel(e.target.value)}
+          >
+            <option value="" disabled>
+              {brand === '' ? 'Önce marka seçiniz' : 'Model seçiniz'}
+            </option>
+            {models.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </label>
+      )}
+
+      {brandIsOther && (
+        <Field label="Araç Markasını Yazınız" name="brandCustom" required placeholder="Örn. Hyundai" />
+      )}
+      {(brandIsOther || modelIsOther) && (
+        <Field label="Araç Modelini Yazınız" name="modelCustom" required placeholder="Örn. Staria" />
+      )}
+    </>
+  );
+}
+
 // ---------- İki seviyeli hizmet seçimi ----------
 
-type SelectedServices = Record<string, string[]>; // categoryId -> seçili alt hizmetler
+interface SelectedServices {
+  categories: string[]; // doğrudan seçilen ana kategoriler
+  items: Record<string, string[]>; // categoryId -> seçili alt hizmetler
+}
+
+const EMPTY_SELECTION: SelectedServices = { categories: [], items: {} };
 
 function ServicePicker({
   selected,
-  onToggle,
+  onToggleCategory,
+  onToggleService,
 }: {
   selected: SelectedServices;
-  onToggle: (categoryId: string, item: string) => void;
+  onToggleCategory: (categoryId: string) => void;
+  onToggleService: (categoryId: string, item: string) => void;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <div className="svc-picker">
       {quoteServiceCategories.map((cat) => {
-        const count = selected[cat.id]?.length ?? 0;
+        const itemCount = selected.items[cat.id]?.length ?? 0;
+        const catChecked = selected.categories.includes(cat.id);
+        const indeterminate = !catChecked && itemCount > 0;
+        const hasSelection = catChecked || itemCount > 0;
         const open = openId === cat.id;
         const panelId = `svc-panel-${cat.id}`;
         return (
-          <div key={cat.id} className={`svc-cat${open ? ' open' : ''}${count > 0 ? ' has-selection' : ''}`}>
-            <button
-              type="button"
-              className="svc-cat-head"
-              aria-expanded={open}
-              aria-controls={panelId}
-              onClick={() => setOpenId(open ? null : cat.id)}
-            >
-              <span className="svc-cat-title">{cat.title}</span>
+          <div key={cat.id} className={`svc-cat${open ? ' open' : ''}${hasSelection ? ' has-selection' : ''}`}>
+            <div className="svc-cat-head">
+              <label className="svc-cat-select">
+                <input
+                  type="checkbox"
+                  checked={catChecked}
+                  ref={(el) => {
+                    if (el) el.indeterminate = indeterminate;
+                  }}
+                  aria-label={`${cat.title} kategorisini talep et`}
+                  onChange={() => onToggleCategory(cat.id)}
+                />
+                <span className="svc-cat-title">{cat.title}</span>
+              </label>
               <span className="svc-cat-meta">
-                {count > 0 && <span className="svc-count">{count} seçili</span>}
-                <span className="svc-chevron" aria-hidden="true">{open ? '−' : '+'}</span>
+                {itemCount > 0 && <span className="svc-count">{itemCount} alt hizmet seçili</span>}
+                <button
+                  type="button"
+                  className="svc-expand"
+                  aria-expanded={open}
+                  aria-controls={panelId}
+                  aria-label={`${cat.title} alt hizmetlerini ${open ? 'kapat' : 'aç'}`}
+                  onClick={() => setOpenId(open ? null : cat.id)}
+                >
+                  {open ? '−' : '+'}
+                </button>
               </span>
-            </button>
+            </div>
             {open && (
               <div id={panelId} className="svc-items" role="group" aria-label={`${cat.title} alt hizmetleri`}>
                 {cat.items.map((item) => {
-                  const checked = selected[cat.id]?.includes(item) ?? false;
+                  const checked = selected.items[cat.id]?.includes(item) ?? false;
                   return (
                     <label key={item} className={`svc-item${checked ? ' checked' : ''}`}>
                       <input
                         type="checkbox"
                         checked={checked}
-                        onChange={() => onToggle(cat.id, item)}
+                        onChange={() => onToggleService(cat.id, item)}
                       />
                       <span>{item}</span>
                     </label>
@@ -130,52 +220,77 @@ function ServicePicker({
   );
 }
 
+/** Seçimlerden WhatsApp hizmet bloğu: kategori başlığı yalnızca BİR kez yazılır;
+ *  yalnız kategori seçiliyse tek satır, alt hizmet varsa altına "–" ile listelenir. */
+function buildServiceLines(selected: SelectedServices): string {
+  return quoteServiceCategories
+    .filter((cat) => selected.categories.includes(cat.id) || (selected.items[cat.id]?.length ?? 0) > 0)
+    .map((cat) => {
+      const items = selected.items[cat.id] ?? [];
+      if (items.length === 0) return `• ${cat.title}`;
+      return `• ${cat.title}\n${items.map((i) => `  – ${i}`).join('\n')}`;
+    })
+    .join('\n\n');
+}
+
 // ---------- Teklif formu ----------
 
 export function QuoteForm() {
   const [sent, setSent] = useState(false);
-  const [selected, setSelected] = useState<SelectedServices>({});
+  const [selected, setSelected] = useState<SelectedServices>(EMPTY_SELECTION);
   const [serviceError, setServiceError] = useState<string | null>(null);
+
+  const toggleCategory = (categoryId: string) => {
+    setServiceError(null);
+    setSelected((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(categoryId)
+        ? prev.categories.filter((c) => c !== categoryId)
+        : [...prev.categories, categoryId],
+    }));
+  };
 
   const toggleService = (categoryId: string, item: string) => {
     setServiceError(null);
     setSelected((prev) => {
-      const current = prev[categoryId] ?? [];
+      const current = prev.items[categoryId] ?? [];
       const next = current.includes(item)
         ? current.filter((i) => i !== item)
         : [...current, item];
-      const copy = { ...prev, [categoryId]: next };
-      if (next.length === 0) delete copy[categoryId];
-      return copy;
+      const items = { ...prev.items, [categoryId]: next };
+      if (next.length === 0) delete items[categoryId];
+      return { ...prev, items };
     });
   };
 
-  const totalSelected = useMemo(
-    () => Object.values(selected).reduce((sum, items) => sum + items.length, 0),
-    [selected],
+  const categoryCount = selected.categories.length;
+  const itemCount = useMemo(
+    () => Object.values(selected.items).reduce((sum, items) => sum + items.length, 0),
+    [selected.items],
   );
+  const hasAnySelection = categoryCount > 0 || itemCount > 0;
   const showOtherInput = useMemo(
-    () => Object.values(selected).some((items) => items.includes('Diğer')),
-    [selected],
+    () => Object.values(selected.items).some((items) => items.includes(OTHER_OPTION)),
+    [selected.items],
   );
+
+  const selectionSummary = useMemo(() => {
+    if (!hasAnySelection) return null;
+    const parts: string[] = [];
+    if (categoryCount > 0) parts.push(`${categoryCount} kategori`);
+    if (itemCount > 0) parts.push(`${itemCount} alt hizmet`);
+    return `${parts.join(', ')} seçildi`;
+  }, [hasAnySelection, categoryCount, itemCount]);
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (totalSelected === 0) {
-      setServiceError('Lütfen en az bir hizmet seçin.');
+    if (!hasAnySelection) {
+      setServiceError('Lütfen en az bir hizmet veya hizmet kategorisi seçin.');
       return;
     }
     const f = new FormData(e.currentTarget);
     const g = (k: string) => String(f.get(k) ?? '').trim();
-
-    // Seçilen hizmetler — yalnızca seçili kategoriler, kategori sırasıyla
-    const serviceLines = quoteServiceCategories
-      .filter((cat) => (selected[cat.id]?.length ?? 0) > 0)
-      .map((cat) => {
-        const items = selected[cat.id].map((i) => `  – ${i}`).join('\n');
-        return `• ${cat.title}\n${items}`;
-      })
-      .join('\n\n');
+    const { brand, model } = resolveVehicleFields(g);
 
     const otherNote = g('serviceOther');
     const messageText = g('message');
@@ -189,14 +304,13 @@ export function QuoteForm() {
         ['Şehir', g('city')],
       ]),
       bulletSection('Araç Bilgileri', [
-        ['Araç Türü', g('vehicleType')],
-        ['Marka', g('brand')],
-        ['Model', g('model')],
+        ['Marka', brand],
+        ['Model', model],
         ['Model Yılı', g('year')],
         ['Şasi / Uzunluk', g('chassis')],
         ['Kullanım Amacı', g('purpose')],
       ]),
-      `*Talep Edilen Hizmetler*\n\n${serviceLines}`,
+      `*Talep Edilen Hizmetler*\n\n${buildServiceLines(selected)}`,
       otherNote ? `*Diğer Hizmet Açıklaması*\n${otherNote}` : null,
       bulletSection('Proje Bilgileri', [
         ['Bütçe Aralığı', g('budget')],
@@ -222,9 +336,7 @@ export function QuoteForm() {
 
       <SectionTitle no="02" title="Araç Bilgileri" />
       <div className="form-grid">
-        <SelectField label="Araç Türü" name="vehicleType" options={vehicleTypes} required />
-        <Field label="Araç Markası" name="brand" required placeholder="Mercedes-Benz, Volkswagen…" />
-        <Field label="Araç Modeli" name="model" required placeholder="Vito, Sprinter, Crafter…" />
+        <VehicleBrandModelFields />
         <Field label="Model Yılı" name="year" placeholder="Örn. 2023" />
         <SelectField label="Şasi / Uzunluk Tipi" name="chassis" options={chassisTypes} emptyLabel="Seçiniz (opsiyonel)" />
         <SelectField label="Kullanım Amacı" name="purpose" options={usagePurposes} emptyLabel="Seçiniz (opsiyonel)" />
@@ -232,9 +344,13 @@ export function QuoteForm() {
 
       <SectionTitle no="03" title="Proje ve Hizmet Bilgileri" />
       <div className="form-field" style={{ marginBottom: 22 }}>
-        <span>Talep Edilen Hizmetler *{totalSelected > 0 && ` — ${totalSelected} hizmet seçildi`}</span>
+        <span>Talep Edilen Hizmetler *{selectionSummary && ` — ${selectionSummary}`}</span>
       </div>
-      <ServicePicker selected={selected} onToggle={toggleService} />
+      <ServicePicker
+        selected={selected}
+        onToggleCategory={toggleCategory}
+        onToggleService={toggleService}
+      />
       {showOtherInput && (
         <label className="form-field" style={{ marginTop: 18 }}>
           <span>Diğer — kısa açıklama</span>
@@ -285,6 +401,7 @@ export function AppointmentForm() {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const g = (k: string) => String(f.get(k) ?? '').trim();
+    const { brand, model } = resolveVehicleFields(g);
     const note = g('message');
 
     const parts: Array<string | null> = [
@@ -294,8 +411,8 @@ export function AppointmentForm() {
         ['Telefon', g('phone')],
       ]),
       bulletSection('Araç Bilgileri', [
-        ['Araç Türü', g('vehicleType')],
-        ['Araç Modeli', g('model')],
+        ['Marka', brand],
+        ['Model', model],
       ]),
       bulletSection('Randevu Bilgileri', [
         ['Görüşme Tipi', g('type')],
@@ -314,8 +431,7 @@ export function AppointmentForm() {
       <div className="form-grid">
         <Field label="Ad Soyad" name="name" required />
         <Field label="Telefon" name="phone" type="tel" required placeholder="05xx xxx xx xx" />
-        <SelectField label="Araç Türü" name="vehicleType" options={vehicleTypes} required />
-        <Field label="Araç Modeli" name="model" required placeholder="Örn. Mercedes Vito Tourer" />
+        <VehicleBrandModelFields />
         <label className="form-field">
           <span>Görüşme Tipi *</span>
           <select name="type" required defaultValue="">

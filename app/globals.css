@@ -1345,30 +1345,35 @@ html.menu-open { overflow: hidden; }
   transition: border-color 0.3s ease;
 }
 
-.svc-cat.has-selection { border-color: var(--amber-soft); }
+.svc-cat.has-selection {
+  border-color: var(--amber-soft);
+  background: rgba(201, 155, 95, 0.05);
+}
 .svc-cat.open { border-color: var(--amber); }
 
 .svc-cat-head {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 15px 18px;
-  background: none;
-  border: none;
-  color: var(--cream);
-  font-family: inherit;
-  font-size: 14.5px;
-  letter-spacing: 0.03em;
-  text-align: left;
-  cursor: pointer;
+  gap: 12px;
+  padding: 13px 12px 13px 16px;
 }
 
-.svc-cat-head:focus-visible {
-  outline: 2px solid var(--amber);
-  outline-offset: -2px;
+/* Kategori checkbox + başlık — expand butonundan BAĞIMSIZ kontrol */
+.svc-cat-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--cream);
+  font-size: 14.5px;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  padding: 4px 0;
 }
+
+.svc-cat-select .svc-cat-title { overflow-wrap: break-word; min-width: 0; }
+.svc-cat-select:hover .svc-cat-title { color: var(--amber); }
 
 .svc-cat-meta {
   display: flex;
@@ -1385,10 +1390,28 @@ html.menu-open { overflow: hidden; }
   white-space: nowrap;
 }
 
-.svc-chevron {
-  font-size: 18px;
-  color: var(--cream-faint);
+/* Ayrı aç/kapat butonu */
+.svc-expand {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-content: center;
+  background: none;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  color: var(--cream-dim);
+  font-size: 19px;
   line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.25s ease, color 0.25s ease;
+}
+
+.svc-expand:hover { border-color: var(--amber); color: var(--amber); }
+
+.svc-expand:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
 }
 
 .svc-items {
@@ -1414,12 +1437,14 @@ html.menu-open { overflow: hidden; }
 .svc-item:hover { color: var(--cream); }
 .svc-item.checked { color: var(--cream); }
 
-.svc-item input[type='checkbox'] {
+/* Kategori ve alt hizmet checkbox'ları — gerçek input, özel görünüm */
+.svc-item input[type='checkbox'],
+.svc-cat-select input[type='checkbox'] {
   appearance: none;
-  width: 17px;
-  height: 17px;
+  width: 19px;
+  height: 19px;
   flex-shrink: 0;
-  border: 1px solid rgba(239, 233, 223, 0.35);
+  border: 1px solid rgba(239, 233, 223, 0.4);
   border-radius: 2px;
   background: transparent;
   cursor: pointer;
@@ -1428,21 +1453,40 @@ html.menu-open { overflow: hidden; }
   transition: border-color 0.25s ease, background 0.25s ease;
 }
 
-.svc-item input[type='checkbox']:checked {
+.svc-item input[type='checkbox']:hover,
+.svc-cat-select input[type='checkbox']:hover { border-color: var(--amber); }
+
+.svc-item input[type='checkbox']:checked,
+.svc-cat-select input[type='checkbox']:checked {
   border-color: var(--amber);
   background: var(--amber);
 }
 
-.svc-item input[type='checkbox']:checked::after {
+.svc-item input[type='checkbox']:checked::after,
+.svc-cat-select input[type='checkbox']:checked::after {
   content: '';
-  width: 9px;
+  width: 10px;
   height: 5px;
   border-left: 2px solid var(--bg);
   border-bottom: 2px solid var(--bg);
   transform: translateY(-1px) rotate(-45deg);
 }
 
-.svc-item input[type='checkbox']:focus-visible {
+/* Ara seçim: kategori seçilmemiş ama içinde seçili alt hizmet var */
+.svc-cat-select input[type='checkbox']:indeterminate {
+  border-color: var(--amber);
+  background: transparent;
+}
+
+.svc-cat-select input[type='checkbox']:indeterminate::after {
+  content: '';
+  width: 10px;
+  height: 2px;
+  background: var(--amber);
+}
+
+.svc-item input[type='checkbox']:focus-visible,
+.svc-cat-select input[type='checkbox']:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }

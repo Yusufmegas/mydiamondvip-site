@@ -1,8 +1,6 @@
 // TEK KAYNAK iletişim verisi — adres/telefon değişikliği yalnızca burada yapılır.
 // Bileşenlerde telefon/adres HARD-CODE edilmez; her zaman bu dosyadan okunur.
 
-const fullAddress = 'Fatih Mahallesi, Reşatbey Sokak No: 8/A, 34325 Küçükçekmece / İstanbul';
-
 export const contact = {
   companyName: 'MyDiamondVIP',
   legalName: 'MyDiamondVIP Araç Tasarım',
@@ -28,8 +26,8 @@ export const contact = {
   city: 'İstanbul',
   country: 'TR',
 
-  // Doğrudan tam adresi Google Maps'te açar (genel işletme araması değil)
-  mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`,
+  // İşletmenin doğrudan Google Maps konum bağlantısı
+  mapUrl: 'https://maps.app.goo.gl/jbExWTNTnbqPvnH2A',
 
   workHours: 'Pazartesi – Cumartesi, 09:00 – 19:00',
   siteUrl: 'https://mydiamondvip.com',

@@ -146,14 +146,6 @@ export const quoteServiceCategories: QuoteServiceCategory[] = [
   },
 ];
 
-export const vehicleTypes = [
-  'Mercedes-Benz Vito / V-Class',
-  'Mercedes-Benz Sprinter',
-  'Volkswagen Crafter',
-  'Ford Transit',
-  'Diğer',
-] as const;
-
 export const chassisTypes = ['Standart', 'Uzun', 'Ekstra Uzun', 'Bilmiyorum', 'Diğer'] as const;
 
 export const usagePurposes = [
