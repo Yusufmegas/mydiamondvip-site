@@ -1,0 +1,491 @@
+/* ==================================================================
+   TEKLİF HAZIRLAMA DEMO — panel (koyu/gold) + A4 çıktı (açık, baskı)
+   Form alanları ve hizmet seçimi globals.css'teki .form-* / .svc-*
+   sınıflarını yeniden kullanır; burada yalnızca panele özgü katman var.
+   ================================================================== */
+
+/* Ana site chrome'u bu kapsamda gizlenir (admin.css'tekiyle aynı teknik) */
+body:has(.qd-root) .site-header,
+body:has(.qd-root) .site-footer,
+body:has(.qd-root) .floating-wa {
+  display: none;
+}
+
+.qd-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--cream);
+}
+
+.qd-demo-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--amber-soft);
+  border-radius: 2px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  vertical-align: middle;
+}
+
+/* ---------- Giriş ekranı ---------- */
+
+.qd-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.qd-login-card {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  background: var(--bg-2);
+  padding: 36px 30px;
+  text-align: center;
+}
+
+.qd-login-logo {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.qd-login-title {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--cream);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.qd-login-card .form-field { text-align: left; }
+
+/* ---------- Toolbar ---------- */
+
+.qd-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: rgba(10, 10, 11, 0.96);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.qd-toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: auto;
+}
+
+.qd-toolbar-logo { height: 26px; width: auto; object-fit: contain; display: block; }
+
+.qd-toolbar-title {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  white-space: nowrap;
+}
+
+.qd-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qd-btn {
+  padding: 9px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: none;
+  color: var(--cream-dim);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.25s ease, color 0.25s ease, background 0.25s ease;
+  min-height: 38px;
+}
+
+.qd-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+.qd-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+.qd-btn:disabled { opacity: 0.5; cursor: wait; }
+
+.qd-btn-primary {
+  border-color: var(--amber);
+  background: var(--amber);
+  color: var(--bg);
+}
+
+.qd-btn-primary:hover { background: var(--gold-dark); border-color: var(--gold-dark); color: var(--bg); }
+
+/* ---------- İki sütun düzen ---------- */
+
+.qd-layout {
+  display: grid;
+  grid-template-columns: 52fr 48fr;
+  gap: 26px;
+  padding: 24px 20px 60px;
+  max-width: 1720px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.qd-form-col { min-width: 0; }
+
+.qd-preview-col {
+  min-width: 0;
+  position: sticky;
+  top: 76px;
+}
+
+@media (max-width: 1080px) {
+  .qd-layout { grid-template-columns: 1fr; }
+  .qd-preview-col { position: static; }
+}
+
+/* ---------- Form yüzeyi ---------- */
+
+.qd-form-col .form {
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  background: var(--bg-2);
+  padding: clamp(18px, 2.4vw, 30px);
+}
+
+.qd-error-summary {
+  margin: 14px 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(200, 90, 70, 0.55);
+  border-radius: 2px;
+  color: #d99a8a;
+  font-size: 14px;
+}
+
+/* ---------- Seçilen hizmetler editörü ---------- */
+
+.qd-selected-list { display: flex; flex-direction: column; gap: 12px; }
+
+.qd-selected-item {
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: var(--bg);
+  padding: 14px 16px;
+}
+
+.qd-selected-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qd-selected-no {
+  font-family: var(--font-display);
+  color: var(--amber);
+  font-size: 14px;
+  min-width: 22px;
+}
+
+.qd-selected-title { flex: 1; min-width: 140px; font-size: 14.5px; color: var(--cream); }
+
+.qd-selected-controls { display: flex; align-items: center; gap: 6px; }
+
+.qd-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-content: center;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  background: none;
+  color: var(--cream-dim);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.qd-icon-btn:hover:not(:disabled) { border-color: var(--amber); color: var(--amber); }
+.qd-icon-btn:disabled { opacity: 0.35; cursor: default; }
+.qd-icon-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+.qd-selected-body {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 560px) {
+  .qd-selected-body { grid-template-columns: 1fr; }
+}
+
+.qd-qty-input,
+.qd-selected-body textarea,
+.qd-custom-form input,
+.qd-custom-form textarea {
+  background: transparent;
+  border: 1px solid rgba(239, 233, 223, 0.22);
+  border-radius: 2px;
+  color: var(--cream);
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.qd-qty-input:focus,
+.qd-selected-body textarea:focus,
+.qd-custom-form input:focus,
+.qd-custom-form textarea:focus {
+  outline: none;
+  border-color: var(--amber);
+}
+
+.qd-field-label {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cream-faint);
+  margin-bottom: 6px;
+}
+
+.qd-custom-form {
+  border: 1px dashed var(--amber-soft);
+  border-radius: 2px;
+  padding: 16px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ==================================================================
+   A4 ÖNİZLEME — açık zemin, baskıya uygun; ekranda ölçeklenir,
+   export sırasında sayfa elementinin GERÇEK A4 ölçüsü kullanılır.
+   ================================================================== */
+
+.qd-preview-scroll {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px;
+}
+
+@media (max-width: 1080px) {
+  .qd-preview-scroll { max-height: none; overflow: visible; }
+}
+
+.qd-preview-scale-wrap {
+  transform-origin: top left;
+}
+
+.quote-a4-page {
+  width: 210mm;
+  height: 297mm;
+  background: #fdfcf8;
+  color: #1c1a17;
+  padding: 16mm;
+  margin: 0 0 18px;
+  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-sans), Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  position: relative;
+}
+
+.qa-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.qa-logo { height: 34px; width: auto; object-fit: contain; display: block; }
+.qa-logo-sm { height: 22px; width: auto; object-fit: contain; display: block; }
+
+.qa-head-right { text-align: right; }
+
+.qa-doc-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 19pt;
+  letter-spacing: 0.12em;
+  color: #1c1a17;
+  margin-bottom: 6px;
+}
+
+.qa-meta { font-size: 9pt; color: #56504a; line-height: 1.7; }
+.qa-meta strong { color: #1c1a17; font-weight: 600; }
+
+.qa-rule {
+  border: none;
+  border-top: 1px solid #c99b5f;
+  margin: 14px 0 18px;
+}
+
+.qa-rule-soft {
+  border: none;
+  border-top: 1px solid rgba(201, 155, 95, 0.35);
+  margin: 10px 0;
+}
+
+.qa-section-title {
+  font-size: 9pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #9f7440;
+  margin-bottom: 8px;
+}
+
+.qa-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+
+.qa-info-row { display: flex; gap: 8px; font-size: 9.5pt; margin-bottom: 4px; }
+.qa-info-row .k { min-width: 92px; color: #7a736b; flex-shrink: 0; }
+.qa-info-row .v { color: #1c1a17; overflow-wrap: break-word; min-width: 0; }
+
+.qa-price-block {
+  margin-top: auto;
+  border: 1px solid #c99b5f;
+  border-radius: 2px;
+  padding: 16px 20px;
+  text-align: center;
+  background: rgba(201, 155, 95, 0.06);
+}
+
+.qa-price-label {
+  font-size: 9pt;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #9f7440;
+  margin-bottom: 6px;
+}
+
+.qa-price-value {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 21pt;
+  color: #1c1a17;
+  letter-spacing: 0.03em;
+}
+
+.qa-price-note { font-size: 8.5pt; color: #56504a; margin-top: 4px; }
+
+.qa-summary-row {
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  font-size: 8.5pt;
+  color: #56504a;
+  margin-top: 12px;
+}
+
+.qa-footer {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(201, 155, 95, 0.4);
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 7.8pt;
+  color: #7a736b;
+  line-height: 1.6;
+}
+
+.qa-footer .right { text-align: right; }
+
+.qa-page-no {
+  position: absolute;
+  bottom: 7mm;
+  right: 16mm;
+  font-size: 7.5pt;
+  color: #9a9088;
+}
+
+/* Hizmet tablosu */
+.qa-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+
+.qa-table th {
+  text-align: left;
+  font-size: 8pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9f7440;
+  border-bottom: 1px solid #c99b5f;
+  padding: 6px 8px;
+}
+
+.qa-table td {
+  vertical-align: top;
+  border-bottom: 1px solid rgba(28, 26, 23, 0.12);
+  padding: 7px 8px;
+  color: #2a2724;
+}
+
+.qa-table .num { width: 7%; color: #9f7440; }
+.qa-table .svc { width: 27%; font-weight: 600; color: #1c1a17; }
+.qa-table .desc { width: 56%; color: #56504a; }
+.qa-table .qty { width: 10%; text-align: center; }
+
+/* Ticari koşullar */
+.qa-term { margin-bottom: 12px; }
+.qa-term h4 {
+  font-size: 8.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9f7440;
+  margin-bottom: 4px;
+}
+.qa-term p { font-size: 9.5pt; color: #2a2724; white-space: pre-line; }
+
+.qa-signatures {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding-top: 20px;
+}
+
+.qa-sign-box {
+  border-top: 1px solid rgba(28, 26, 23, 0.35);
+  padding-top: 10px;
+  font-size: 9pt;
+  color: #2a2724;
+}
+
+.qa-sign-box .t {
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9f7440;
+  margin-bottom: 26px;
+}
+
+.qa-sign-box .l { color: #7a736b; font-size: 8.5pt; margin-bottom: 22px; }
+
+/* Ekrana ölçekleme kabı — sayfalar gerçek mm ölçüsünde kalır */
+.qd-a4-frame { width: 100%; }
