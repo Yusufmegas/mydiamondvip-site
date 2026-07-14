@@ -1437,29 +1437,43 @@ html.menu-open { overflow: hidden; }
 .svc-item:hover { color: var(--cream); }
 .svc-item.checked { color: var(--cream); }
 
-/* Kategori ve alt hizmet checkbox'ları — gerçek input, özel görünüm */
+/* Kategori ve alt hizmet checkbox'ları — gerçek input, özel görünüm.
+   DİKKAT: Form section-light içinde; renkler hard-code EDİLMEZ, tema
+   değişkenleri kullanılır (hard-coded krem açık zeminde görünmez oluyordu). */
 .svc-item input[type='checkbox'],
 .svc-cat-select input[type='checkbox'] {
   appearance: none;
-  width: 19px;
-  height: 19px;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   flex-shrink: 0;
-  border: 1px solid rgba(239, 233, 223, 0.4);
+  border: 1.5px solid var(--cream-dim);
   border-radius: 2px;
-  background: transparent;
+  background: var(--hairline);
+  opacity: 1;
+  visibility: visible;
   cursor: pointer;
   display: grid;
   place-content: center;
-  transition: border-color 0.25s ease, background 0.25s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Hover görünürlüğü yalnızca GÜÇLENDİRİR — kutu hover'sız da nettir */
+.svc-item:hover input[type='checkbox'],
+.svc-cat-select:hover input[type='checkbox'],
 .svc-item input[type='checkbox']:hover,
-.svc-cat-select input[type='checkbox']:hover { border-color: var(--amber); }
+.svc-cat-select input[type='checkbox']:hover {
+  border-color: var(--amber);
+  background: rgba(201, 155, 95, 0.1);
+}
 
 .svc-item input[type='checkbox']:checked,
 .svc-cat-select input[type='checkbox']:checked {
   border-color: var(--amber);
   background: var(--amber);
+  box-shadow: 0 0 0 1px rgba(201, 155, 95, 0.18);
 }
 
 .svc-item input[type='checkbox']:checked::after,
@@ -1475,13 +1489,14 @@ html.menu-open { overflow: hidden; }
 /* Ara seçim: kategori seçilmemiş ama içinde seçili alt hizmet var */
 .svc-cat-select input[type='checkbox']:indeterminate {
   border-color: var(--amber);
-  background: transparent;
+  background: rgba(201, 155, 95, 0.14);
 }
 
 .svc-cat-select input[type='checkbox']:indeterminate::after {
   content: '';
   width: 10px;
   height: 2px;
+  border-radius: 1px;
   background: var(--amber);
 }
 
