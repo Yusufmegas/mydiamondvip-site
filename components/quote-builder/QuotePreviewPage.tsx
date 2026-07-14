@@ -29,7 +29,7 @@ export function QuotePreviewPage({
             <img src={brand.logo} alt="MyDiamondVIP" className="qa-logo-sm" />
             <div className="qa-meta">Teklif No: <strong>{quoteNumber}</strong></div>
           </div>
-          <hr className="qa-rule" />
+          <hr className="qa-rule-thin" />
         </>
       )}
       {children}

@@ -279,8 +279,9 @@ body:has(.qd-root) .floating-wa {
 }
 
 /* ==================================================================
-   A4 ÖNİZLEME — açık zemin, baskıya uygun; ekranda ölçeklenir,
-   export sırasında sayfa elementinin GERÇEK A4 ölçüsü kullanılır.
+   A4 ÖNİZLEME — kurumsal baskı tasarımı.
+   Palet: koyu antrasit / kırık beyaz taban + marka (magenta) vurgusu
+   ölçülü dozda. Ekranda ölçeklenir; export gerçek A4 ölçüsünü kullanır.
    ================================================================== */
 
 .qd-preview-scroll {
@@ -294,26 +295,36 @@ body:has(.qd-root) .floating-wa {
   .qd-preview-scroll { max-height: none; overflow: visible; }
 }
 
-.qd-preview-scale-wrap {
-  transform-origin: top left;
-}
+.qd-preview-scale-wrap { transform-origin: top left; }
 
 .quote-a4-page {
+  /* Belge paleti — tüm sayfalarda aynı marka dili */
+  --qa-bg: #fbfaf7;          /* kırık beyaz zemin */
+  --qa-ink: #1b1b1d;         /* ana metin — antrasit */
+  --qa-body: #2e2e31;
+  --qa-muted: #6a6a6f;
+  --qa-line: #232326;        /* güçlü ayırıcılar */
+  --qa-line-soft: rgba(27, 27, 29, 0.14);
+  --qa-accent: #a4176f;      /* logo magentasıyla uyumlu, ölçülü vurgu */
+  --qa-accent-soft: rgba(164, 23, 111, 0.08);
+
   width: 210mm;
   height: 297mm;
-  background: #fdfcf8;
-  color: #1c1a17;
-  padding: 16mm;
+  background: var(--qa-bg);
+  color: var(--qa-ink);
+  padding: 15mm 16mm 14mm;
   margin: 0 0 18px;
   box-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 10.5pt;
+  font-size: 9.5pt;
   line-height: 1.55;
   position: relative;
 }
+
+/* ---------- Üst bölüm ---------- */
 
 .qa-head {
   display: flex;
@@ -322,170 +333,286 @@ body:has(.qd-root) .floating-wa {
   gap: 24px;
 }
 
-.qa-logo { height: 34px; width: auto; object-fit: contain; display: block; }
-.qa-logo-sm { height: 22px; width: auto; object-fit: contain; display: block; }
+.qa-logo { height: 52px; width: auto; object-fit: contain; display: block; }
+.qa-logo-sm { height: 30px; width: auto; object-fit: contain; display: block; }
 
 .qa-head-right { text-align: right; }
 
-.qa-doc-title {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 19pt;
-  letter-spacing: 0.12em;
-  color: #1c1a17;
-  margin-bottom: 6px;
+.qa-meta {
+  font-size: 8.5pt;
+  color: var(--qa-muted);
+  line-height: 1.8;
+  letter-spacing: 0.02em;
 }
+.qa-meta strong { color: var(--qa-ink); font-weight: 600; }
 
-.qa-meta { font-size: 9pt; color: #56504a; line-height: 1.7; }
-.qa-meta strong { color: #1c1a17; font-weight: 600; }
+/* Belge başlığı — uzun ayırıcı çizginin ÜSTÜNDE, 18pt bold */
+.qa-doc-title {
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--qa-ink);
+  margin: 26px 0 10px;
+}
 
 .qa-rule {
   border: none;
-  border-top: 1px solid #c99b5f;
-  margin: 14px 0 18px;
+  border-top: 2px solid var(--qa-line);
+  margin: 0 0 18px;
+}
+
+.qa-rule-thin {
+  border: none;
+  border-top: 1px solid var(--qa-line);
+  margin: 12px 0;
 }
 
 .qa-rule-soft {
   border: none;
-  border-top: 1px solid rgba(201, 155, 95, 0.35);
-  margin: 10px 0;
+  border-top: 1px solid var(--qa-line-soft);
+  margin: 12px 0;
 }
 
 .qa-section-title {
-  font-size: 9pt;
-  letter-spacing: 0.24em;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #9f7440;
-  margin-bottom: 8px;
+  color: var(--qa-accent);
+  margin-bottom: 10px;
 }
+
+/* ---------- Bilgi blokları (müşteri / araç) ---------- */
 
 .qa-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 26px;
+  gap: 22px;
 }
 
-.qa-info-row { display: flex; gap: 8px; font-size: 9.5pt; margin-bottom: 4px; }
-.qa-info-row .k { min-width: 92px; color: #7a736b; flex-shrink: 0; }
-.qa-info-row .v { color: #1c1a17; overflow-wrap: break-word; min-width: 0; }
+.qa-info-panel {
+  border-top: 2px solid var(--qa-line);
+  padding-top: 10px;
+}
+
+.qa-info-row {
+  display: flex;
+  gap: 10px;
+  font-size: 9pt;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--qa-line-soft);
+}
+.qa-info-row:last-child { border-bottom: none; }
+.qa-info-row .k {
+  min-width: 88px;
+  flex-shrink: 0;
+  color: var(--qa-muted);
+  font-size: 7.5pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+.qa-info-row .v { color: var(--qa-body); overflow-wrap: break-word; min-width: 0; font-weight: 500; }
+
+/* ---------- Fiyat bloğu — zarif, sakin, etkili ---------- */
 
 .qa-price-block {
   margin-top: auto;
-  border: 1px solid #c99b5f;
-  border-radius: 2px;
-  padding: 16px 20px;
+  border: 1px solid var(--qa-line);
+  padding: 14px 22px 12px;
   text-align: center;
-  background: rgba(201, 155, 95, 0.06);
+  background: #ffffff;
 }
 
 .qa-price-label {
-  font-size: 9pt;
-  letter-spacing: 0.26em;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: #9f7440;
-  margin-bottom: 6px;
+  color: var(--qa-muted);
+  margin-bottom: 5px;
 }
 
 .qa-price-value {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 21pt;
-  color: #1c1a17;
-  letter-spacing: 0.03em;
+  font-size: 17pt;
+  font-weight: 700;
+  color: var(--qa-ink);
+  letter-spacing: 0.04em;
 }
 
-.qa-price-note { font-size: 8.5pt; color: #56504a; margin-top: 4px; }
+.qa-price-note {
+  font-size: 8pt;
+  color: var(--qa-muted);
+  margin-top: 5px;
+  font-style: italic;
+}
 
-.qa-summary-row {
-  display: flex;
-  justify-content: center;
-  gap: 26px;
-  flex-wrap: wrap;
-  font-size: 8.5pt;
-  color: #56504a;
+/* Fiyat altı — üç küçük bilgi bloğu */
+.qa-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
   margin-top: 12px;
 }
 
+.qa-summary-cell {
+  border-top: 1px solid var(--qa-line-soft);
+  padding-top: 7px;
+}
+
+.qa-summary-cell .t {
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--qa-accent);
+  margin-bottom: 3px;
+}
+
+.qa-summary-cell .v {
+  font-size: 8.5pt;
+  color: var(--qa-body);
+  line-height: 1.5;
+}
+
+/* ---------- Footer ---------- */
+
 .qa-footer {
   margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(201, 155, 95, 0.4);
+  padding-top: 9px;
+  border-top: 1px solid var(--qa-line);
   display: flex;
   justify-content: space-between;
   gap: 18px;
-  font-size: 7.8pt;
-  color: #7a736b;
-  line-height: 1.6;
+  font-size: 7.5pt;
+  color: var(--qa-muted);
+  line-height: 1.65;
+  letter-spacing: 0.02em;
 }
 
 .qa-footer .right { text-align: right; }
 
 .qa-page-no {
   position: absolute;
-  bottom: 7mm;
-  right: 16mm;
-  font-size: 7.5pt;
-  color: #9a9088;
+  bottom: 6.5mm;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 7pt;
+  color: #9d9da2;
+  letter-spacing: 0.14em;
 }
 
-/* Hizmet tablosu */
-.qa-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+/* ---------- Hizmet tablosu ---------- */
+
+.qa-list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.qa-list-title {
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--qa-ink);
+}
+
+.qa-table { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
 
 .qa-table th {
   text-align: left;
-  font-size: 8pt;
-  letter-spacing: 0.14em;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #9f7440;
-  border-bottom: 1px solid #c99b5f;
-  padding: 6px 8px;
+  color: var(--qa-ink);
+  border-top: 2px solid var(--qa-line);
+  border-bottom: 1px solid var(--qa-line);
+  padding: 7px 8px;
+  background: var(--qa-accent-soft);
 }
 
 .qa-table td {
   vertical-align: top;
-  border-bottom: 1px solid rgba(28, 26, 23, 0.12);
-  padding: 7px 8px;
-  color: #2a2724;
+  border-bottom: 1px solid var(--qa-line-soft);
+  padding: 8px;
+  color: var(--qa-body);
+  line-height: 1.6;
 }
 
-.qa-table .num { width: 7%; color: #9f7440; }
-.qa-table .svc { width: 27%; font-weight: 600; color: #1c1a17; }
-.qa-table .desc { width: 56%; color: #56504a; }
-.qa-table .qty { width: 10%; text-align: center; }
+.qa-table .num { width: 7%; color: var(--qa-accent); font-weight: 600; }
+.qa-table .svc { width: 27%; font-weight: 600; color: var(--qa-ink); }
+.qa-table .desc { width: 56%; color: #4c4c50; font-size: 8.5pt; }
+.qa-table .qty { width: 10%; text-align: center; font-weight: 600; }
 
-/* Ticari koşullar */
-.qa-term { margin-bottom: 12px; }
+/* ---------- Ticari koşullar ---------- */
+
+.qa-term { margin-bottom: 13px; }
 .qa-term h4 {
-  font-size: 8.5pt;
-  letter-spacing: 0.2em;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #9f7440;
+  color: var(--qa-accent);
   margin-bottom: 4px;
 }
-.qa-term p { font-size: 9.5pt; color: #2a2724; white-space: pre-line; }
+.qa-term p { font-size: 9pt; color: var(--qa-body); white-space: pre-line; line-height: 1.6; }
+
+/* ---------- İmza alanları — kurumsal evrak düzeni ---------- */
 
 .qa-signatures {
   margin-top: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  padding-top: 20px;
+  gap: 26px;
+  padding-top: 18px;
 }
 
 .qa-sign-box {
-  border-top: 1px solid rgba(28, 26, 23, 0.35);
-  padding-top: 10px;
-  font-size: 9pt;
-  color: #2a2724;
+  border: 1px solid var(--qa-line);
+  padding: 12px 16px 14px;
+  background: #ffffff;
 }
 
 .qa-sign-box .t {
-  font-size: 8pt;
-  letter-spacing: 0.18em;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9f7440;
-  margin-bottom: 26px;
+  color: var(--qa-ink);
+  border-bottom: 1px solid var(--qa-line);
+  padding-bottom: 7px;
+  margin-bottom: 14px;
 }
 
-.qa-sign-box .l { color: #7a736b; font-size: 8.5pt; margin-bottom: 22px; }
+.qa-sign-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.qa-sign-field:last-child { margin-bottom: 2px; }
+
+.qa-sign-field .l {
+  font-size: 7pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--qa-muted);
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.qa-sign-field .line {
+  flex: 1;
+  border-bottom: 1px solid rgba(27, 27, 29, 0.4);
+  height: 14px;
+}
+
+.qa-sign-field.tall .line { height: 34px; }
 
 /* Ekrana ölçekleme kabı — sayfalar gerçek mm ölçüsünde kalır */
 .qd-a4-frame { width: 100%; }

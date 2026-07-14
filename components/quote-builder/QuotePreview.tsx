@@ -60,13 +60,14 @@ function priceLines(draft: QuoteDraft): { main: string; note: string } {
   const parsed = parseAmount(draft.price.amount);
   const amountText = parsed !== null ? formatAmountTR(parsed) : '—';
   const base = `${amountText} ${draft.price.currency}`;
+  // KDV durumu kısa etiket değil, tam cümle olarak sunulur
   switch (draft.price.vat) {
     case 'KDV Hariç':
-      return { main: `${base} + KDV`, note: '' };
+      return { main: `${base} + KDV`, note: 'Belirtilen toplam teklif bedeline KDV dahil değildir.' };
     case 'KDV Dahil':
-      return { main: base, note: 'KDV dahildir.' };
+      return { main: base, note: 'Belirtilen toplam teklif bedeline KDV dahildir.' };
     default:
-      return { main: base, note: 'KDV uygulanmayacaktır.' };
+      return { main: base, note: 'Belirtilen toplam teklif bedeline KDV uygulanmayacaktır.' };
   }
 }
 
@@ -121,7 +122,6 @@ export function QuotePreview({
             <div className="qa-head">
               <img src={brand.logo} alt="MyDiamondVIP" className="qa-logo" />
               <div className="qa-head-right">
-                <div className="qa-doc-title">FİYAT TEKLİFİ</div>
                 <div className="qa-meta">
                   Teklif No: <strong>{draft.quoteNumber || '—'}</strong>
                   <br />
@@ -135,14 +135,19 @@ export function QuotePreview({
                 </div>
               </div>
             </div>
+
+            {/* Belge başlığı — uzun ayırıcı çizginin üstünde */}
+            <div className="qa-doc-title">FİYAT TEKLİFİ</div>
             <hr className="qa-rule" />
 
             {draft.title.trim() && (
-              <p style={{ fontSize: '11pt', marginBottom: 14, color: '#2a2724' }}>{draft.title}</p>
+              <p style={{ fontSize: '10.5pt', margin: '0 0 16px', color: 'var(--qa-body)', fontWeight: 500 }}>
+                {draft.title}
+              </p>
             )}
 
             <div className="qa-cols">
-              <div>
+              <div className="qa-info-panel">
                 <p className="qa-section-title">Müşteri Bilgileri</p>
                 <InfoRow k="Müşteri" v={draft.customer.name} />
                 <InfoRow k="Yetkili" v={draft.customer.contactPerson} />
@@ -152,7 +157,7 @@ export function QuotePreview({
                 <InfoRow k="Vergi D." v={draft.customer.taxOffice} />
                 <InfoRow k="Vergi No" v={draft.customer.taxNumber} />
               </div>
-              <div>
+              <div className="qa-info-panel">
                 <p className="qa-section-title">Araç Bilgileri</p>
                 <InfoRow k="Marka" v={vehicle.brand} />
                 <InfoRow k="Model" v={vehicle.model} />
@@ -168,7 +173,7 @@ export function QuotePreview({
               <>
                 <hr className="qa-rule-soft" />
                 <p className="qa-section-title">Proje Açıklaması</p>
-                <p style={{ fontSize: '9.5pt', color: '#2a2724' }}>{draft.vehicle.projectNote}</p>
+                <p style={{ fontSize: '9pt', color: 'var(--qa-body)' }}>{draft.vehicle.projectNote}</p>
               </>
             )}
 
@@ -177,10 +182,21 @@ export function QuotePreview({
               <p className="qa-price-value">{price.main}</p>
               {price.note && <p className="qa-price-note">{price.note}</p>}
             </div>
-            <div className="qa-summary-row">
-              <span>{sortedServices.length} kalem hizmet</span>
-              {draft.terms.delivery.trim() && <span>Teslim: {draft.terms.delivery}</span>}
-              {paymentFirstLine && <span>{paymentFirstLine}</span>}
+
+            {/* Fiyat altı — üç düzenli bilgi bloğu */}
+            <div className="qa-summary-grid">
+              <div className="qa-summary-cell">
+                <p className="t">Hizmet Kapsamı</p>
+                <p className="v">{sortedServices.length} kalem hizmet</p>
+              </div>
+              <div className="qa-summary-cell">
+                <p className="t">Teslim Süresi</p>
+                <p className="v">{draft.terms.delivery.trim() || 'Görüşmede netleştirilecektir'}</p>
+              </div>
+              <div className="qa-summary-cell">
+                <p className="t">Ödeme Planı</p>
+                <p className="v">{paymentFirstLine || '—'}</p>
+              </div>
             </div>
 
             <div className="qa-footer" style={{ marginTop: 16 }}>
@@ -210,9 +226,9 @@ export function QuotePreview({
                 quoteNumber={draft.quoteNumber}
                 compactHeader
               >
-                <p className="qa-section-title" style={{ fontSize: '10pt', marginBottom: 12 }}>
-                  Detaylı Dizayn Listesi
-                </p>
+                <div className="qa-list-head">
+                  <span className="qa-list-title">Detaylı Dizayn Listesi</span>
+                </div>
                 <table className="qa-table">
                   <thead>
                     <tr>
@@ -245,9 +261,9 @@ export function QuotePreview({
             quoteNumber={draft.quoteNumber}
             compactHeader
           >
-            <p className="qa-section-title" style={{ fontSize: '10pt', marginBottom: 14 }}>
-              Ticari Koşullar
-            </p>
+            <div className="qa-list-head">
+              <span className="qa-list-title">Ticari Koşullar</span>
+            </div>
             {draft.terms.payment.trim() && (
               <div className="qa-term">
                 <h4>Ödeme Planı</h4>
@@ -286,13 +302,33 @@ export function QuotePreview({
             <div className="qa-signatures">
               <div className="qa-sign-box">
                 <p className="t">MyDiamondVIP Yetkilisi</p>
-                <p className="l">Ad Soyad</p>
-                <p className="l">İmza / Kaşe</p>
+                <div className="qa-sign-field">
+                  <span className="l">Ad Soyad</span>
+                  <span className="line" />
+                </div>
+                <div className="qa-sign-field">
+                  <span className="l">Tarih</span>
+                  <span className="line" />
+                </div>
+                <div className="qa-sign-field tall">
+                  <span className="l">Kaşe / İmza</span>
+                  <span className="line" />
+                </div>
               </div>
               <div className="qa-sign-box">
-                <p className="t">Müşteri</p>
-                <p className="l">Ad Soyad</p>
-                <p className="l">İmza</p>
+                <p className="t">Müşteri / Firma Yetkilisi</p>
+                <div className="qa-sign-field">
+                  <span className="l">Ad Soyad</span>
+                  <span className="line" />
+                </div>
+                <div className="qa-sign-field">
+                  <span className="l">Tarih</span>
+                  <span className="line" />
+                </div>
+                <div className="qa-sign-field tall">
+                  <span className="l">İmza</span>
+                  <span className="line" />
+                </div>
               </div>
             </div>
           </QuotePreviewPage>
