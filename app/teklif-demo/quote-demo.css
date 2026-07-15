@@ -299,7 +299,7 @@ body:has(.qd-root) .floating-wa {
 
 .quote-a4-page {
   /* Belge paleti — tüm sayfalarda aynı marka dili */
-  --qa-bg: #fbfaf7;          /* kırık beyaz zemin */
+  --qa-bg: #ffffff;          /* saf beyaz zemin */
   --qa-ink: #1b1b1d;         /* ana metin — antrasit */
   --qa-body: #2e2e31;
   --qa-muted: #6a6a6f;
@@ -414,6 +414,26 @@ body:has(.qd-root) .floating-wa {
   padding-top: 2px;
 }
 .qa-info-row .v { color: var(--qa-body); overflow-wrap: break-word; min-width: 0; font-weight: 500; }
+
+/* ---------- Kapak eskizi — bilgi bloklarıyla footer arasındaki alanı doldurur ---------- */
+
+.quote-cover-sketch {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 14px;
+}
+
+.quote-cover-sketch img {
+  width: 80%; /* içerik alanının %80'i ≈ sayfa genişliğinin ~%68'i */
+  max-width: 150mm;
+  max-height: 108mm;
+  height: auto;
+  object-fit: contain;
+  filter: contrast(1.05);
+}
 /* ---------- Footer ---------- */
 
 .qa-footer {
