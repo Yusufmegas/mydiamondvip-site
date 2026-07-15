@@ -59,15 +59,15 @@ function InfoRow({ k, v }: { k: string; v: string }) {
 function priceLines(draft: QuoteDraft): { main: string; note: string } {
   const parsed = parseAmount(draft.price.amount);
   const amountText = parsed !== null ? formatAmountTR(parsed) : '—';
-  const base = `${amountText} ${draft.price.currency}`;
-  // KDV durumu kısa etiket değil, tam cümle olarak sunulur
+  // Fiyat satırı yalnızca tutarı taşır; KDV durumu ayrı tam cümlede sunulur
+  const main = `${amountText} ${draft.price.currency}`;
   switch (draft.price.vat) {
     case 'KDV Hariç':
-      return { main: `${base} + KDV`, note: 'Belirtilen toplam teklif bedeline KDV dahil değildir.' };
+      return { main, note: 'Belirtilen toplam teklif bedeline KDV dahil değildir.' };
     case 'KDV Dahil':
-      return { main: base, note: 'Belirtilen toplam teklif bedeline KDV dahildir.' };
+      return { main, note: 'Belirtilen toplam teklif bedeline KDV dahildir.' };
     default:
-      return { main: base, note: 'Belirtilen toplam teklif bedeline KDV uygulanmayacaktır.' };
+      return { main, note: 'Belirtilen toplam teklif bedeline KDV uygulanmayacaktır.' };
   }
 }
 
@@ -107,7 +107,6 @@ export function QuotePreview({
 
   const vehicle = resolveDraftVehicle(draft.vehicle);
   const price = priceLines(draft);
-  const paymentFirstLine = draft.terms.payment.split('\n')[0]?.trim() ?? '';
 
   return (
     <div className="qd-preview-scroll">
@@ -136,9 +135,9 @@ export function QuotePreview({
               </div>
             </div>
 
-            {/* Belge başlığı — uzun ayırıcı çizginin üstünde */}
-            <div className="qa-doc-title">FİYAT TEKLİFİ</div>
-            <hr className="qa-rule" />
+            {/* Belge başlığı — ortalanmış, uzun ayırıcı çizginin üstünde */}
+            <div className="quote-cover-title">FİYAT TEKLİFİ</div>
+            <hr className="quote-cover-divider" />
 
             {draft.title.trim() && (
               <p style={{ fontSize: '10.5pt', margin: '0 0 16px', color: 'var(--qa-body)', fontWeight: 500 }}>
@@ -177,29 +176,7 @@ export function QuotePreview({
               </>
             )}
 
-            <div className="qa-price-block">
-              <p className="qa-price-label">Toplam Araç Dizayn Fiyatı</p>
-              <p className="qa-price-value">{price.main}</p>
-              {price.note && <p className="qa-price-note">{price.note}</p>}
-            </div>
-
-            {/* Fiyat altı — üç düzenli bilgi bloğu */}
-            <div className="qa-summary-grid">
-              <div className="qa-summary-cell">
-                <p className="t">Hizmet Kapsamı</p>
-                <p className="v">{sortedServices.length} kalem hizmet</p>
-              </div>
-              <div className="qa-summary-cell">
-                <p className="t">Teslim Süresi</p>
-                <p className="v">{draft.terms.delivery.trim() || 'Görüşmede netleştirilecektir'}</p>
-              </div>
-              <div className="qa-summary-cell">
-                <p className="t">Ödeme Planı</p>
-                <p className="v">{paymentFirstLine || '—'}</p>
-              </div>
-            </div>
-
-            <div className="qa-footer" style={{ marginTop: 16 }}>
+            <div className="qa-footer" style={{ marginTop: 'auto' }}>
               <div>
                 {contact.address}
                 <br />
@@ -264,6 +241,14 @@ export function QuotePreview({
             <div className="qa-list-head">
               <span className="qa-list-title">Ticari Koşullar</span>
             </div>
+
+            {/* Toplam fiyat — yalnızca son sayfada, ödeme planının üstünde */}
+            <div className="qa-total-box">
+              <p className="qa-total-label">TOPLAM TEKLİF BEDELİ</p>
+              <p className="qa-total-value">{price.main}</p>
+              <p className="qa-total-note">{price.note}</p>
+            </div>
+
             {draft.terms.payment.trim() && (
               <div className="qa-term">
                 <h4>Ödeme Planı</h4>

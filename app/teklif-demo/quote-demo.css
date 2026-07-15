@@ -346,16 +346,17 @@ body:has(.qd-root) .floating-wa {
 }
 .qa-meta strong { color: var(--qa-ink); font-weight: 600; }
 
-/* Belge başlığı — uzun ayırıcı çizginin ÜSTÜNDE, 18pt bold */
-.qa-doc-title {
-  font-size: 18pt;
+/* Belge başlığı — tam genişlikte ortalanmış, zarif ve kurumsal */
+.quote-cover-title {
+  text-align: center;
+  font-size: 14pt;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.14em;
   color: var(--qa-ink);
-  margin: 26px 0 10px;
+  margin: 24px 0 11px;
 }
 
-.qa-rule {
+.quote-cover-divider {
   border: none;
   border-top: 2px solid var(--qa-line);
   margin: 0 0 18px;
@@ -413,68 +414,6 @@ body:has(.qd-root) .floating-wa {
   padding-top: 2px;
 }
 .qa-info-row .v { color: var(--qa-body); overflow-wrap: break-word; min-width: 0; font-weight: 500; }
-
-/* ---------- Fiyat bloğu — zarif, sakin, etkili ---------- */
-
-.qa-price-block {
-  margin-top: auto;
-  border: 1px solid var(--qa-line);
-  padding: 14px 22px 12px;
-  text-align: center;
-  background: #ffffff;
-}
-
-.qa-price-label {
-  font-size: 7.5pt;
-  font-weight: 600;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--qa-muted);
-  margin-bottom: 5px;
-}
-
-.qa-price-value {
-  font-size: 17pt;
-  font-weight: 700;
-  color: var(--qa-ink);
-  letter-spacing: 0.04em;
-}
-
-.qa-price-note {
-  font-size: 8pt;
-  color: var(--qa-muted);
-  margin-top: 5px;
-  font-style: italic;
-}
-
-/* Fiyat altı — üç küçük bilgi bloğu */
-.qa-summary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
-  margin-top: 12px;
-}
-
-.qa-summary-cell {
-  border-top: 1px solid var(--qa-line-soft);
-  padding-top: 7px;
-}
-
-.qa-summary-cell .t {
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--qa-accent);
-  margin-bottom: 3px;
-}
-
-.qa-summary-cell .v {
-  font-size: 8.5pt;
-  color: var(--qa-body);
-  line-height: 1.5;
-}
-
 /* ---------- Footer ---------- */
 
 .qa-footer {
@@ -549,6 +488,38 @@ body:has(.qd-root) .floating-wa {
 .qa-table .qty { width: 10%; text-align: center; font-weight: 600; }
 
 /* ---------- Ticari koşullar ---------- */
+
+/* Toplam teklif bedeli — son sayfada, zarif ve kontrollü kutu */
+.qa-total-box {
+  border: 1px solid var(--qa-line);
+  background: #ffffff;
+  padding: 15px 18px 13px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.qa-total-label {
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--qa-accent);
+  margin-bottom: 5px;
+}
+
+.qa-total-value {
+  font-size: 16pt;
+  font-weight: 700;
+  color: var(--qa-ink);
+  letter-spacing: 0.03em;
+}
+
+.qa-total-note {
+  font-size: 8.5pt;
+  color: var(--qa-body);
+  margin-top: 5px;
+  font-style: italic;
+}
 
 .qa-term { margin-bottom: 13px; }
 .qa-term h4 {
