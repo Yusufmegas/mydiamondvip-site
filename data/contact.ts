@@ -12,10 +12,10 @@ export const contact = {
   phoneHref: 'tel:+902125988822',
 
   // WhatsApp destek ve fiyat teklifi hattı
-  whatsappDisplay: '0536 824 81 65',
-  whatsappInternational: '+90 536 824 81 65',
-  whatsappNumber: '905368248165',
-  whatsappHref: 'https://wa.me/905368248165',
+  whatsappDisplay: '0530 745 63 65',
+  whatsappInternational: '+90 530 745 63 65',
+  whatsappNumber: '905307456365',
+  whatsappHref: 'https://wa.me/905307456365',
 
   email: 'info@mydiamondvip.com',
   emailHref: 'mailto:info@mydiamondvip.com',

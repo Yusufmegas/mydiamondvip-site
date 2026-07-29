@@ -6,8 +6,7 @@ import { whatsappMessages } from '@/data/siteContent';
 
 export const metadata: Metadata = {
   title: 'İletişim — MyDiamondVIP İstanbul',
-  description:
-    'MyDiamondVIP iletişim: Sabit hat 0212 598 88 22 · WhatsApp destek 0536 824 81 65 · info@mydiamondvip.com · Küçükçekmece / İstanbul. VIP araç dizayn projeleriniz için arayın veya WhatsApp ile yazın.',
+  description: `MyDiamondVIP iletişim: Sabit hat ${contact.phoneDisplay} · WhatsApp destek ${contact.whatsappDisplay} · ${contact.email} · ${contact.district} / ${contact.city}. VIP araç dizayn projeleriniz için arayın veya WhatsApp ile yazın.`,
   alternates: { canonical: '/iletisim' },
 };
 
