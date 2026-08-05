@@ -15,6 +15,7 @@ body:has(.qd-root) .floating-wa {
   min-height: 100vh;
   background: var(--bg);
   color: var(--cream);
+  font-size: calc(1rem + 2pt);
 }
 
 .qd-demo-badge {
@@ -22,7 +23,7 @@ body:has(.qd-root) .floating-wa {
   padding: 2px 8px;
   border: 1px solid var(--amber-soft);
   border-radius: 2px;
-  font-size: 10px;
+  font-size: calc(10px + 2pt);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--amber);
@@ -57,7 +58,7 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qd-login-title {
-  font-size: 15px;
+  font-size: calc(15px + 2pt);
   letter-spacing: 0.08em;
   color: var(--cream);
   margin-bottom: 24px;
@@ -94,7 +95,7 @@ body:has(.qd-root) .floating-wa {
 .qd-toolbar-logo { height: 26px; width: auto; object-fit: contain; display: block; }
 
 .qd-toolbar-title {
-  font-size: 12px;
+  font-size: calc(12px + 2pt);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--cream-dim);
@@ -115,7 +116,7 @@ body:has(.qd-root) .floating-wa {
   background: none;
   color: var(--cream-dim);
   font-family: inherit;
-  font-size: 12px;
+  font-size: calc(12px + 2pt);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
@@ -177,7 +178,7 @@ body:has(.qd-root) .floating-wa {
   border: 1px solid rgba(200, 90, 70, 0.55);
   border-radius: 2px;
   color: #d99a8a;
-  font-size: 14px;
+  font-size: calc(14px + 2pt);
 }
 
 /* ---------- Seçilen hizmetler editörü ---------- */
@@ -201,11 +202,11 @@ body:has(.qd-root) .floating-wa {
 .qd-selected-no {
   font-family: var(--font-display);
   color: var(--amber);
-  font-size: 14px;
+  font-size: calc(14px + 2pt);
   min-width: 22px;
 }
 
-.qd-selected-title { flex: 1; min-width: 140px; font-size: 14.5px; color: var(--cream); }
+.qd-selected-title { flex: 1; min-width: 140px; font-size: calc(14.5px + 2pt); color: var(--cream); }
 
 .qd-selected-controls { display: flex; align-items: center; gap: 6px; }
 
@@ -218,7 +219,7 @@ body:has(.qd-root) .floating-wa {
   border-radius: 2px;
   background: none;
   color: var(--cream-dim);
-  font-size: 14px;
+  font-size: calc(14px + 2pt);
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
@@ -248,7 +249,7 @@ body:has(.qd-root) .floating-wa {
   color: var(--cream);
   padding: 9px 10px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: calc(14px + 2pt);
 }
 
 .qd-qty-input:focus,
@@ -261,7 +262,7 @@ body:has(.qd-root) .floating-wa {
 
 .qd-field-label {
   display: block;
-  font-size: 10.5px;
+  font-size: calc(10.5px + 2pt);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--cream-faint);
@@ -305,8 +306,8 @@ body:has(.qd-root) .floating-wa {
   --qa-muted: #6a6a6f;
   --qa-line: #232326;        /* güçlü ayırıcılar */
   --qa-line-soft: rgba(27, 27, 29, 0.14);
-  --qa-accent: #a4176f;      /* logo magentasıyla uyumlu, ölçülü vurgu */
-  --qa-accent-soft: rgba(164, 23, 111, 0.08);
+  --qa-accent: #831259;      /* #a4176f renginin RGB kanalları %20 koyulaştırıldı */
+  --qa-accent-soft: rgba(131, 18, 89, 0.08);
 
   width: 210mm;
   height: 297mm;
@@ -319,7 +320,7 @@ body:has(.qd-root) .floating-wa {
   flex-direction: column;
   overflow: hidden;
   font-family: var(--font-sans), Arial, sans-serif;
-  font-size: 9.5pt;
+  font-size: 11.5pt;
   line-height: 1.55;
   position: relative;
 }
@@ -339,7 +340,7 @@ body:has(.qd-root) .floating-wa {
 .qa-head-right { text-align: right; }
 
 .qa-meta {
-  font-size: 8.5pt;
+  font-size: 10.5pt;
   color: var(--qa-muted);
   line-height: 1.8;
   letter-spacing: 0.02em;
@@ -349,7 +350,7 @@ body:has(.qd-root) .floating-wa {
 /* Belge başlığı — tam genişlikte ortalanmış, zarif ve kurumsal */
 .quote-cover-title {
   text-align: center;
-  font-size: 14pt;
+  font-size: 16pt;
   font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--qa-ink);
@@ -375,7 +376,7 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qa-section-title {
-  font-size: 8pt;
+  font-size: 10pt;
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -399,7 +400,7 @@ body:has(.qd-root) .floating-wa {
 .qa-info-row {
   display: flex;
   gap: 10px;
-  font-size: 9pt;
+  font-size: 11pt;
   padding: 3px 0;
   border-bottom: 1px solid var(--qa-line-soft);
 }
@@ -408,7 +409,7 @@ body:has(.qd-root) .floating-wa {
   min-width: 88px;
   flex-shrink: 0;
   color: var(--qa-muted);
-  font-size: 7.5pt;
+  font-size: 9.5pt;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding-top: 2px;
@@ -443,8 +444,8 @@ body:has(.qd-root) .floating-wa {
   display: flex;
   justify-content: space-between;
   gap: 18px;
-  font-size: 7.5pt;
-  color: var(--qa-muted);
+  font-size: 9.5pt;
+  color: #000000;
   line-height: 1.65;
   letter-spacing: 0.02em;
 }
@@ -457,7 +458,7 @@ body:has(.qd-root) .floating-wa {
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 7pt;
+  font-size: 9pt;
   color: #9d9da2;
   letter-spacing: 0.14em;
 }
@@ -472,18 +473,18 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qa-list-title {
-  font-size: 11pt;
+  font-size: 13pt;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--qa-ink);
 }
 
-.qa-table { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
+.qa-table { width: 100%; border-collapse: collapse; font-size: 10.8pt; }
 
 .qa-table th {
   text-align: left;
-  font-size: 7.5pt;
+  font-size: 9.5pt;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -504,7 +505,7 @@ body:has(.qd-root) .floating-wa {
 
 .qa-table .num { width: 7%; color: var(--qa-accent); font-weight: 600; }
 .qa-table .svc { width: 27%; font-weight: 600; color: var(--qa-ink); }
-.qa-table .desc { width: 56%; color: #4c4c50; font-size: 8.5pt; }
+.qa-table .desc { width: 56%; color: #4c4c50; font-size: 10.5pt; }
 .qa-table .qty { width: 10%; text-align: center; font-weight: 600; }
 
 /* ---------- Ticari koşullar ---------- */
@@ -519,7 +520,7 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qa-total-label {
-  font-size: 8pt;
+  font-size: 10pt;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -528,14 +529,14 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qa-total-value {
-  font-size: 16pt;
+  font-size: 18pt;
   font-weight: 700;
   color: var(--qa-ink);
   letter-spacing: 0.03em;
 }
 
 .qa-total-note {
-  font-size: 8.5pt;
+  font-size: 10.5pt;
   color: var(--qa-body);
   margin-top: 5px;
   font-style: italic;
@@ -543,14 +544,14 @@ body:has(.qd-root) .floating-wa {
 
 .qa-term { margin-bottom: 13px; }
 .qa-term h4 {
-  font-size: 8pt;
+  font-size: 10pt;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--qa-accent);
   margin-bottom: 4px;
 }
-.qa-term p { font-size: 9pt; color: var(--qa-body); white-space: pre-line; line-height: 1.6; }
+.qa-term p { font-size: 11pt; color: var(--qa-body); white-space: pre-line; line-height: 1.45; }
 
 /* ---------- İmza alanları — kurumsal evrak düzeni ---------- */
 
@@ -569,7 +570,7 @@ body:has(.qd-root) .floating-wa {
 }
 
 .qa-sign-box .t {
-  font-size: 7.5pt;
+  font-size: 9.5pt;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -589,7 +590,7 @@ body:has(.qd-root) .floating-wa {
 .qa-sign-field:last-child { margin-bottom: 2px; }
 
 .qa-sign-field .l {
-  font-size: 7pt;
+  font-size: 9pt;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--qa-muted);
@@ -607,3 +608,19 @@ body:has(.qd-root) .floating-wa {
 
 /* Ekrana ölçekleme kabı — sayfalar gerçek mm ölçüsünde kalır */
 .qd-a4-frame { width: 100%; }
+
+/* globals.css'ten yeniden kullanılan teklif formu sınıfları, yalnızca bu rota kapsamında +2pt */
+.qd-root .cta { font-size: calc(12px + 2pt); }
+.qd-root .cta-small { font-size: calc(11px + 2pt); }
+.qd-root .form-field span { font-size: calc(11px + 2pt); }
+.qd-root .form-field input,
+.qd-root .form-field select,
+.qd-root .form-field textarea { font-size: calc(15.5px + 2pt); }
+.qd-root .form-success,
+.qd-root .form-error { font-size: calc(14px + 2pt); }
+.qd-root .form-section-no { font-size: calc(15px + 2pt); }
+.qd-root .form-section-title { font-size: calc(12px + 2pt); }
+.qd-root .svc-cat-select,
+.qd-root .svc-item { font-size: calc(14.5px + 2pt); }
+.qd-root .svc-count { font-size: calc(11px + 2pt); }
+.qd-root .svc-expand { font-size: calc(19px + 2pt); }

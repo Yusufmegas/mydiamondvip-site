@@ -140,7 +140,7 @@ export function QuotePreview({
             <hr className="quote-cover-divider" />
 
             {draft.title.trim() && (
-              <p style={{ fontSize: '10.5pt', margin: '0 0 16px', color: 'var(--qa-body)', fontWeight: 500 }}>
+              <p style={{ fontSize: '12.5pt', margin: '0 0 16px', color: 'var(--qa-body)', fontWeight: 500 }}>
                 {draft.title}
               </p>
             )}
@@ -172,17 +172,29 @@ export function QuotePreview({
               <>
                 <hr className="qa-rule-soft" />
                 <p className="qa-section-title">Proje Açıklaması</p>
-                <p style={{ fontSize: '9pt', color: 'var(--qa-body)' }}>{draft.vehicle.projectNote}</p>
+                <p style={{ fontSize: '11pt', color: 'var(--qa-body)' }}>{draft.vehicle.projectNote}</p>
               </>
             )}
 
             {/* VIP araç eskizi — bilgi blokları ile footer arasında ortalanır */}
             <div className="quote-cover-sketch" style={{ margin: 0 }}>
-              <img
-                src="/images/teklif/teklif-gorsel-1.jpg"
-                alt="VIP araç tasarım eskizi"
-                style={{ width: '100%', height: '100%', maxWidth: 'none', maxHeight: 'none', objectFit: 'contain' }}
-              />
+              <div
+                style={{
+                  width: '100%',
+                  maxHeight: '100%',
+                  aspectRatio: '16 / 9',
+                  padding: '6px',
+                  border: '1pt solid var(--qa-accent)',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                }}
+              >
+                <img
+                  src="/images/teklif/teklif-gorsel-1.jpg"
+                  alt="VIP araç tasarım eskizi"
+                  style={{ width: '100%', height: '100%', maxWidth: 'none', maxHeight: 'none', objectFit: 'contain' }}
+                />
+              </div>
             </div>
 
             <div className="qa-footer" style={{ marginTop: 'auto' }}>
