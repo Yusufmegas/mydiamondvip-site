@@ -59,7 +59,7 @@ export const offerServiceCategories: OfferServiceCategory[] = [
       },
       {
         id: 'kolcak-ici-masa',
-        title: 'Kolçak İçi Manuel Masa',
+        title: 'Elektrikli Masa',
         description: 'Kolçak içine entegre manuel açılır masa.',
         defaultQuantity: 2,
       },

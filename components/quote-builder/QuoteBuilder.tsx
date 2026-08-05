@@ -24,6 +24,11 @@ import { QuotePriceFields } from './QuotePriceFields';
 import { QuoteCommercialTerms } from './QuoteCommercialTerms';
 import { QuotePreview } from './QuotePreview';
 
+const ELECTRIC_TABLE_SERVICE_ID = 'kolcak-ici-masa';
+const electricTableTitle = offerServiceCategories
+  .flatMap((category) => category.items)
+  .find((item) => item.id === ELECTRIC_TABLE_SERVICE_ID)?.title;
+
 function SectionTitle({ no, title }: { no: string; title: string }) {
   return (
     <div className="form-section-head">
@@ -71,7 +76,14 @@ export function QuoteBuilder() {
       if (raw) {
         const parsed = JSON.parse(raw) as QuoteDraft;
         if (parsed && typeof parsed.quoteNumber === 'string' && Array.isArray(parsed.services)) {
-          setDraft(parsed);
+          setDraft({
+            ...parsed,
+            services: parsed.services.map((service) =>
+              service.id === ELECTRIC_TABLE_SERVICE_ID && electricTableTitle
+                ? { ...service, title: electricTableTitle }
+                : service,
+            ),
+          });
           return;
         }
       }

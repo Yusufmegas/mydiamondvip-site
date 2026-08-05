@@ -6,7 +6,7 @@
    optimize edilmemiş doğrudan <img> gerekir; next/image proxy URL'si
    canvas'a alınırken sorun çıkarabilir. */
 import { brand } from '@/data/brand';
-import { contact } from '@/data/contact';
+import { quoteContact as contact } from '@/lib/quote-demo/contact';
 
 export function QuotePreviewPage({
   pageNo,

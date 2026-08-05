@@ -5,7 +5,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from 'react';
 import { brand } from '@/data/brand';
-import { contact } from '@/data/contact';
+import { quoteContact as contact } from '@/lib/quote-demo/contact';
 import type { QuoteDraft, SelectedOfferService } from '@/lib/quote-demo/types';
 import {
   resolveDraftVehicle,
