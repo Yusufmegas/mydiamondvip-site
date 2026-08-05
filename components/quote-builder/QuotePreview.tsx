@@ -178,7 +178,7 @@ export function QuotePreview({
 
             {/* VIP araç eskizi — bilgi blokları ile footer arasında ortalanır */}
             <div className="quote-cover-sketch">
-              <img src="/quote/teklif-eskiz.webp" alt="VIP araç tasarım eskizi" />
+              <img src="/images/teklif/teklif-gorsel-1.jpg" alt="VIP araç tasarım eskizi" />
             </div>
 
             <div className="qa-footer" style={{ marginTop: 'auto' }}>

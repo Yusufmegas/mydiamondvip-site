@@ -63,11 +63,17 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         description: 'Kolçak içine entegre manuel açılır masa.',
         defaultQuantity: 2,
       },
+      {
+        id: 'baldir-destegi',
+        title: 'Baldır Desteği',
+        description: 'Koltuk için baldır desteği.',
+        defaultQuantity: 1,
+      },
     ],
   },
   {
     id: 'ic-mimari',
-    title: 'İç Mimari ve Kaplama',
+    title: 'İç Tasarım ve Kaplama',
     items: [
       {
         id: 'sol-yan-trim',
@@ -184,6 +190,12 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         id: 'hertz-ses-sistemi',
         title: 'HERTZ Premium Ses Sistemi',
         description: 'Yüksek standartlı, EISA ödüllü premium araç içi ses sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'bluetooth',
+        title: 'Bluetooth',
+        description: 'Araç içi multimedya sistemi için Bluetooth bağlantısı.',
         defaultQuantity: 1,
       },
     ],
@@ -310,9 +322,111 @@ export const offerServiceCategories: OfferServiceCategory[] = [
       },
     ],
   },
+  {
+    id: 'wc-su-sistemleri',
+    title: 'WC ve Su Sistemleri',
+    items: [
+      {
+        id: 'wc-bolme',
+        title: 'WC Bölme',
+        description: 'WC bölme uygulaması.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'ara-bolme-kapisi',
+        title: 'Ara Bölme Kapısı',
+        description: 'Ara bölme kapısı uygulaması.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'muhtelif-dolap',
+        title: 'Muhtelif Dolap',
+        description: 'Muhtelif dolap uygulaması.',
+        defaultQuantity: 1,
+      },
+      {
+        id: '12-v-marin-tuvalet',
+        title: '12 V Marin Tuvalet',
+        description: '12 V marin tuvalet sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: '12-v-marin-hidrofor',
+        title: '12 V Marin Hidrafor',
+        description: '12 V marin hidrafor sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: '12-v-pis-su-bosaltma-pompasi',
+        title: '12 V Pis Su Boşaltma Pompası',
+        description: '12 V pis su boşaltma pompası.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tatli-su-dolum-sistemi',
+        title: 'Tatlı Su Dolum Sistemi',
+        description: 'Tatlı su dolum sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'pis-su-tanki',
+        title: 'Pis Su Tankı',
+        description: 'Pis su tankı.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tatli-su-tanki',
+        title: 'Tatlı Su Tankı',
+        description: 'Tatlı su tankı.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tank-seviye-gostergeleri',
+        title: 'Tank Seviye Göstergeleri',
+        description: 'Tank seviye göstergeleri.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'elektrik-sigorta-kontrol-paneli',
+        title: 'Elektrik Sigorta ve Kontrol Paneli',
+        description: 'Elektrik sigorta ve kontrol paneli.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'su-devresi-hortum-montaj-ekipmanlari',
+        title: 'Su Devresi Hortum ve Montaj Ekipmanları',
+        description: 'Su devresi hortum ve montaj ekipmanları.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'elektrik-kablo-montaj-ekipmanlari',
+        title: 'Elektrik Kablo ve Montaj Ekipmanları',
+        description: 'Elektrik kablo ve montaj ekipmanları.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'ayna',
+        title: 'Ayna',
+        description: 'Ayna uygulaması.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'el-yikama-lavabosu',
+        title: 'El Yıkama Lavabosu',
+        description: 'El yıkama lavabosu.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'wc-zemini',
+        title: 'WC Zemini',
+        description: 'WC zemini uygulaması.',
+        defaultQuantity: 1,
+      },
+    ],
+  },
 ];
 
-/** Toplam hizmet sayısı — 40 olmalı (build sırasında tip/veri bütünlüğü kontrolü için) */
+/** Toplam hizmet sayısı — 58 olmalı (build sırasında tip/veri bütünlüğü kontrolü için) */
 export const OFFER_SERVICE_COUNT = offerServiceCategories.reduce(
   (sum, c) => sum + c.items.length,
   0,

@@ -62,7 +62,7 @@ export const COUNTER_STORAGE_KEY = 'mdv-quote-demo-counter-v1';
 export const DEFAULT_PAYMENT_TEXT =
   "Araç kabulünde toplam teklif bedelinin %50'si ön ödeme olarak alınır.\nKalan %50, araç tesliminde tahsil edilir.";
 export const DEFAULT_WARRANTY_TEXT =
-  'Firmamız tarafından dizayn uygulaması yapılan araç, kullanım hataları hariç garanti kapsamındadır.';
+  'Firmamız tarafından dizayn uygulaması yapılan araç, kullanım hataları hariç 2 Yıl garanti kapsamındadır.';
 export const DEFAULT_QUOTE_TITLE = 'VIP Araç Dizaynı Fiyat Teklifi';
 
 function toDateInput(d: Date): string {
