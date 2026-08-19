@@ -69,6 +69,24 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         description: 'Koltuk için baldır desteği.',
         defaultQuantity: 1,
       },
+      {
+        id: 'kapi-girisi-4lu-koltuk',
+        title: 'Kapı Girişi 4’lü Koltuk',
+        description: 'Giriş bölümüne uygun dört kişilik oturma grubu.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'orijinal-3lu-koltuk',
+        title: 'Orijinal 3’lü Koltuk',
+        description: 'Araç yapısına uyumlu üç kişilik oturma grubu.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'sag-on-tekli-koltuk',
+        title: 'Sağ Ön Tekli Koltuk',
+        description: 'Ön bölüm için tek kişilik oturma seçeneği.',
+        defaultQuantity: 1,
+      },
     ],
   },
   {
@@ -137,6 +155,18 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         description: 'İç dizayn uygulamasında kullanılacak tüm gerekli sarf malzemeleri.',
         defaultQuantity: 1,
       },
+      {
+        id: 'imitasyon-deri',
+        title: 'İmitasyon Deri',
+        description: 'Belirlenen iç yüzeyler için suni deri kaplama.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'zemin-pvc',
+        title: 'Zemin PVC',
+        description: 'Araç zeminine dayanıklı PVC kaplama uygulaması.',
+        defaultQuantity: 1,
+      },
     ],
   },
   {
@@ -160,6 +190,12 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         id: 'intercom',
         title: 'Intercom',
         description: 'VIP kabin ile şoför kabini arasında iletişim sağlayan bas-konuş sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tv-onu-damperli-cam',
+        title: 'TV Önü Damperli Cam',
+        description: 'TV önünde kontrollü açılıp kapanan cam sistemi.',
         defaultQuantity: 1,
       },
     ],
@@ -234,6 +270,18 @@ export const offerServiceCategories: OfferServiceCategory[] = [
         title: 'Makyaj Aynası',
         description: 'Araç içi konsepte uygun makyaj aynası.',
         defaultQuantity: 2,
+      },
+      {
+        id: 'dijital-saat',
+        title: 'Dijital Saat',
+        description: 'Kabin içinde kolay okunabilir zaman göstergesi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'tavan-serit-aydinlatma',
+        title: 'Tavan Şerit Aydınlatma',
+        description: 'Tavan boyunca homojen ışık sağlayan şerit uygulaması.',
+        defaultQuantity: 1,
       },
     ],
   },
@@ -424,9 +472,63 @@ export const offerServiceCategories: OfferServiceCategory[] = [
       },
     ],
   },
+  {
+    id: 'dis-aksesuar-konfor',
+    title: 'Dış Aksesuar ve Konfor',
+    items: [
+      {
+        id: 'airmatic',
+        title: 'Airmatic',
+        description: 'Sürüş konforunu destekleyen havalı süspansiyon sistemi.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'yan-basamak',
+        title: 'Yan Basamak',
+        description: 'Araca iniş ve binişi kolaylaştıran yan basamak.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'cam-alti-krom',
+        title: 'Cam Altı Krom',
+        description: 'Cam altlarına uygulanan krom dış trim.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'body-kit',
+        title: 'Body Kit',
+        description: 'Araç dış görünümünü tamamlayan gövde parçaları.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'sinyalli-ayna-kapagi',
+        title: 'Sinyalli Ayna Kapağı',
+        description: 'Entegre sinyal aydınlatmalı dış ayna kapağı.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'elektrikli-basamak',
+        title: 'Elektrikli Basamak',
+        description: 'Kapıyla birlikte otomatik açılıp kapanan basamak.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'on-panjur',
+        title: 'Ön Panjur',
+        description: 'Araç ön tasarımına uyumlu dış görünüm parçası.',
+        defaultQuantity: 1,
+      },
+      {
+        id: 'jant',
+        title: 'Jant',
+        description: 'Araç tasarımına uyumlu jant seçeneği.',
+        defaultQuantity: 1,
+      },
+    ],
+  },
 ];
 
-/** Toplam hizmet sayısı — 58 olmalı (build sırasında tip/veri bütünlüğü kontrolü için) */
+/** Toplam hizmet sayısı — 74 olmalı (build sırasında tip/veri bütünlüğü kontrolü için) */
 export const OFFER_SERVICE_COUNT = offerServiceCategories.reduce(
   (sum, c) => sum + c.items.length,
   0,
