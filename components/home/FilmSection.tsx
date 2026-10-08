@@ -11,8 +11,16 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrubEngine, type EngineStats } from '@/lib/scrubEngine';
 import { FallbackEngine } from '@/lib/fallbackEngine';
-import { LAST_FRAME, STOP_FRAMES, frameFromScroll } from '@/lib/timeline';
-import { FILM_1080_URL, FILM_720_URL } from '@/lib/filmSources';
+import {
+  LAST_FRAME,
+  STOP_FRAMES,
+  FILM_VH_DESKTOP,
+  FILM_VH_MOBILE,
+  DEFAULT_DECODE_MODE,
+  type DecodeMode,
+  frameFromScroll,
+} from '@/lib/timeline';
+import { FILM_1080_URL, FILM_720_URL, FILM_540_URL } from '@/lib/filmSources';
 import Gate from './Gate';
 import Overlays, { updateOverlays } from './Overlays';
 import ProfChip from './ProfChip';
@@ -21,11 +29,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 type Engine = ScrubEngine | FallbackEngine;
 
-// Bölüm yüksekliği — sahne temposu buradan kontrol edilir. Mobilde scroll
-// mesafesi kısalır (overlay kare zamanlamaları DEĞİŞMEZ; playhead bölüm-göreli
-// orana eşlendiği için yalnızca parmak yolu kısalır).
-const FILM_VH_DESKTOP = 800;
-const FILM_VH_MOBILE = 560;
+// Bölüm yüksekliği (sahne temposu) lib/timeline.ts'teki FILM_SCROLL_SCALE'den gelir.
+// Mobilde scroll mesafesi kısadır (overlay kare zamanlamaları DEĞİŞMEZ; playhead
+// bölüm-göreli orana eşlendiği için yalnızca parmak yolu kısalır).
 const SNAP_IDLE_MS = 280;
 const SNAP_RADIUS = 70;
 
@@ -40,7 +46,7 @@ export default function FilmSection() {
   const [filmVh, setFilmVh] = useState(FILM_VH_DESKTOP);
   const statsRef = useRef<EngineStats | null>(null);
 
-  // Mobil scroll mesafesi: SSR 800vh ile eşleşir, client'ta coarse cihazda 560vh'e iner
+  // Mobil scroll mesafesi: SSR masaüstü yüksekliğiyle eşleşir, client'ta coarse cihazda kısalır
   useEffect(() => {
     if (
       window.matchMedia('(pointer: coarse)').matches ||
@@ -50,7 +56,7 @@ export default function FilmSection() {
     }
   }, []);
 
-  // KRİTİK: Film 800vh→560vh'e inince ALT BÖLÜMLER ~2000px yukarı kayar.
+  // KRİTİK: Film mobil yüksekliğe inince ALT BÖLÜMLER binlerce px yukarı kayar.
   // Craft/Process/CTA/Footer ScrollTrigger'ları konumlarını eski yerleşime göre
   // hesapladıysa tetik noktaları sayfa sonunun altında kalır ve reveal içerikleri
   // (opacity 0) sonsuza dek görünmez kalır. Yeni yükseklik DOM'a uygulandıktan
@@ -160,10 +166,14 @@ export default function FilmSection() {
 
     const boot = async () => {
       resize();
-      const use720 = isCoarse || window.innerWidth * dpr < 1600;
-      // URL kaynağı lib/filmSources.ts'ten gelir (env destekli); motor mantığı değişmedi
-      const url = use720 ? FILM_720_URL : FILM_1080_URL;
-      flog('boot: varyant', { url, isCoarse, dpr });
+      // Varyant: telefon veya Save-Data → 540p · tablet / dar ekran → 720p · geniş masaüstü → 1080p
+      const saveData = !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+      const url = isPhone || saveData
+        ? FILM_540_URL
+        : isCoarse || window.innerWidth * dpr < 1600
+          ? FILM_720_URL
+          : FILM_1080_URL;
+      flog('boot: varyant', { url, isCoarse, isPhone, saveData, dpr });
 
       const startEngine = async (e: Engine) => {
         if (disposed) { e.destroy(); return; }
@@ -200,10 +210,12 @@ export default function FilmSection() {
       };
 
       if (await ScrubEngine.supported()) {
-        let remembered = false;
-        try { remembered = localStorage.getItem('film-sw') === '1'; } catch { /* gizli mod */ }
-        const preferSoftware = new URLSearchParams(location.search).has('sw') || remembered;
-        const se = new ScrubEngine(url, { preferSoftware, mobile: isCoarse });
+        // Decode modu: DEFAULT_DECODE_MODE; ?hw=1 donanımı, ?hw=0 yazılımı zorlar (otomatik geçiş kapalı)
+        const hwParam = new URLSearchParams(location.search).get('hw');
+        const forceMode = hwParam === '0' || hwParam === '1';
+        const decodeMode: DecodeMode = hwParam === '1' ? 'hw' : hwParam === '0' ? 'sw' : DEFAULT_DECODE_MODE;
+        // Save-Data'da boşta arka plan doldurma kapalı (yalnızca görülen bölüm + prefetch iner)
+        const se = new ScrubEngine(url, { decodeMode, forceMode, mobile: isCoarse, backgroundFill: !saveData });
         se.onFatal = (err) => { if (!disposed) void useFallback(err); };
         try {
           await startEngine(se);

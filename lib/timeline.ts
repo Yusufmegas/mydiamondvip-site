@@ -14,7 +14,34 @@ export const SEG_START = SEG_FRAMES.reduce<number[]>((acc, n) => {
 }, [0]).slice(0, -1);
 // [0,121,242,363,484,605,726,847,968,1089,1210,1331,1452]
 
-export const SCROLL_VH = 800; // toplam scroll yüksekliği
+// ---- Film bölümü scroll uzunluğu ----
+// Sahne temposu buradan ayarlanır: tüm film bu kadar vh scroll'a yayılır.
+// FILM_SCROLL_SCALE 1 → eski 800vh/560vh (masaüstünde ~4px/kare), 1.5 → ~6px/kare.
+export const FILM_SCROLL_SCALE = 1.5;
+export const FILM_VH_DESKTOP = Math.round(800 * FILM_SCROLL_SCALE);
+export const FILM_VH_MOBILE = Math.round(560 * FILM_SCROLL_SCALE);
+
+// ---- Scrub yumuşatma (codec motoru) ----
+// Gösterilen kare hedefe her rAF'ta üstel olarak yaklaşır (60Hz'e normalize).
+// 0.18 → hedefin %95'ine ~250ms'de yetişir. Büyüdükçe daha çevik, küçüldükçe daha süzülerek.
+export const SCRUB_SMOOTHING = 0.18;
+// 60Hz karesi başına en fazla ilerleme (film karesi). 4 → 240 kare/sn (10× gerçek zaman).
+export const MAX_STEP_PER_FRAME = 4;
+// Hedefle fark bunu aşarsa (scrollbar sürükleme, uzak snap) ara kareler oynatılmaz,
+// doğrudan hedefin keyframe'inden decode edilip atlanır.
+export const JUMP_THRESHOLD = 120;
+// Hareket yönünde önden indirilen kare sayısı (rangeLoader prefetch).
+// 240 kare ≈ 10 sn film ≈ 1080p'de ~3.8MB, 540p'de ~1.3MB.
+export const PREFETCH_FRAMES = 240;
+// Hareket yönünde önden decode edilen kare sayısı (GOP sınırına yuvarlanır).
+export const DECODE_AHEAD_FRAMES = 24;
+
+// ---- Decode modu ----
+// 'hw': donanım decoder'ı; hata / watchdog reset'i / asılı flush'ta o oturum için
+// otomatik 'sw'ye geçilir. 'sw': doğrudan yazılım decode. Gerçek cihaz testine göre
+// tersine çevirmek için yalnızca bu satırı değiştirin. ?hw=1 / ?hw=0 modu zorlar.
+export type DecodeMode = 'hw' | 'sw';
+export const DEFAULT_DECODE_MODE: DecodeMode = 'hw';
 
 // ---- Bölümler (spec §7) ----
 export interface Section {

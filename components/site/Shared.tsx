@@ -15,8 +15,12 @@ export function PageHero({
   return (
     <section className={`page-hero${image ? ' has-image' : ''}`}>
       {image && (
+        // fetchPriority="high" YOK: Next bu sayfayı başka sayfadan prefetch edip arka planda
+        // render ettiğinde React, yüksek öncelikli <img>'i O sayfanın <head>'ine preload olarak
+        // ekliyordu (ana sayfa, göstermediği hero görsellerini filmle yarıştırarak indiriyordu).
+        // eager + SSR HTML'deki <img> bu sayfanın kendi LCP'si için yeterli.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="page-hero-bg" loading="eager" fetchPriority="high" data-parallax="0.1" />
+        <img src={image} alt="" className="page-hero-bg" loading="eager" data-parallax="0.1" />
       )}
       <div className="container">
         {kicker && <p className="kicker" data-reveal="fade">{kicker}</p>}
