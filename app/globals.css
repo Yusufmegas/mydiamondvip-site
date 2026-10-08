@@ -552,24 +552,6 @@ html.menu-open { overflow: hidden; }
 .film-section.film-reduced .film-poster { opacity: 1; visibility: visible; }
 .film-canvas { z-index: 2; }
 
-/* Mobilde 16:9 kaynak, oranı korunarak 9:16 kadraja kırpılır. */
-@media (max-width: 700px) {
-  .film-sticky {
-    background: radial-gradient(ellipse at center, #25201e 0%, var(--bg) 72%);
-  }
-
-  .film-canvas,
-  .film-poster {
-    inset: auto;
-    left: 50%;
-    top: 50%;
-    width: min(100vw, 50.625dvh);
-    height: min(177.7778vw, 90dvh);
-    aspect-ratio: 9 / 16;
-    transform: translate(-50%, -50%);
-  }
-}
-
 .film-hint {
   position: absolute;
   left: 50%;
