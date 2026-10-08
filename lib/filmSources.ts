@@ -1,5 +1,5 @@
 // Film video kaynak URL'leri — TEK yapılandırma noktası.
-// Production: Vercel ortam değişkenlerine Blob/CDN URL'leri yazılır
+// Production: Railway ortam değişkenlerine R2/CDN URL'leri yazılır
 // (NEXT_PUBLIC_* değişkenleri build sırasında istemci koduna gömülür).
 // Yerel geliştirme: değişken tanımlı değilse public/codec/ altındaki
 // yerel dosyalara düşer — davranış birebir aynı kalır.

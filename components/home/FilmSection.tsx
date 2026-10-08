@@ -107,14 +107,12 @@ export default function FilmSection() {
     const dpr = isCoarse
       ? (isPhone ? 1 : Math.min(1.25, window.devicePixelRatio || 1))
       : Math.min(2, window.devicePixelRatio || 1);
-    // Tampon boyutu canvas'ın KENDİ CSS kutusundan alınır (100dvh) — mobilde adres
-    // çubuğu animasyonunda innerHeight ile dvh ayrışınca buffer'ın esnetilip aracın
-    // ezilmesini önler. ResizeObserver dvh değişimlerini de yakalar.
+    // Tampon boyutu canvas'ın gerçek CSS kutusundan alınır. Mobilde tam ekran sahne;
+    // Safari adres çubuğu açılıp kapanırken bitmap ve görünen kutu aynı oranda kalır.
     const resize = () => {
-      const w = canvas.clientWidth || window.innerWidth;
-      const h = canvas.clientHeight || window.innerHeight;
-      const bw = Math.round(w * dpr);
-      const bh = Math.round(h * dpr);
+      const rect = canvas.getBoundingClientRect();
+      const bw = Math.max(1, Math.round(rect.width * dpr));
+      const bh = Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width === bw && canvas.height === bh) return;
       canvas.width = bw;
       canvas.height = bh;
