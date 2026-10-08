@@ -39,6 +39,7 @@ export class FallbackEngine {
     state: 'boot', stalls: 0, maxGapMs: 0, boost: 1, gap: 0, cacheSize: 0,
     inFlight: 0, netPct: 0, drawnFrame: -1, targetFrame: 0, mode: 'fallback',
     reqCenters: '-', reqLast: '-', flushes: 0, jumps: 0, resets: 0, accel: '-',
+    holdMs: 0, gop: 1,
     netMB: 0, residentMB: 0, peakResidentMB: 0,
     wantedNow: 0, wantedMax: 0, staleAborts: 0, netInFlight: 0, netInFlightMax: 0,
   };

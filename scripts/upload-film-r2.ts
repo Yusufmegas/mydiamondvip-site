@@ -34,8 +34,10 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 
-const FILM_PREFIX = 'film/v2';
+// v3: GOP 12 / CRF 23 / B-frame yok (encode/run-encodes-v3.sh) — v2 all-intra idi.
+const FILM_PREFIX = 'film/v3';
 const FILES = [
+  { local: 'public/codec/film-540.mp4', key: `${FILM_PREFIX}/film-540.mp4` },
   { local: 'public/codec/film-720.mp4', key: `${FILM_PREFIX}/film-720.mp4` },
   { local: 'public/codec/film-1080.mp4', key: `${FILM_PREFIX}/film-1080.mp4` },
 ];

@@ -1,21 +1,26 @@
 // Öncelikli ON-DEMAND Range yükleyici (LRU).
 // Eski davranış: boş chunk kaldıkça TÜM dosya arka planda indirilir ve bütün
 // 2MB buffer'lar süresiz bellekte tutulurdu. Yeni davranış:
-//   - Yalnızca kapı (head) bölgesi ve motorun AÇIKÇA istediği (want) hedef-çevresi
-//     chunk'ları indirilir; film asla otomatik/sürekli indirilmez.
+//   - Yalnızca kapı (head) bölgesi, motorun aktif penceresi (setWindow: playhead→hedef
+//     yolu + hareket yönünde prefetch) ve açık talepler (want) indirilir; film asla
+//     baştan sona otomatik indirilmez.
 //   - Bellek tavanı aşılınca en uzun süredir kullanılmayan uzak chunk'lar LRU ile
 //     bırakılır (kapı bölgesi + playhead çevresi + bekleyen istekler korunur).
-//   - Hedef değişince artık gerekmeyen uzak in-flight istekler AbortController ile iptal edilir.
+//   - Pencere değişince YALNIZCA pencere dışında kalan in-flight istekler iptal edilir —
+//     playhead ile hedef arasındaki yol asla iptal edilmez (eski "yol hiç inmiyor →
+//     starve-jump" sorunu).
 //   - 206 Range desteği korunur; sunucu 200-full dönerse gövde TEK ArrayBuffer olarak
 //     saklanır (chunk'lar zero-copy görünümdür) — bu yalnızca Range desteklemeyen
 //     sunucular için işlevsel fallback'tir ve uyarı loglanır.
 
-export const CHUNK_SIZE = 2 * 1024 * 1024;
+// 512KB: GOP'lu dosyada ~30 kare (1080p). Atlama sonrası hedef GOP'u (~200KB) küçük bir
+// istekle gelir; 2MB chunk'ta aynı kare ~4× daha geç çizilirdi.
+export const CHUNK_SIZE = 512 * 1024;
 
 type ChunkState = 0 | 1 | 2; // empty | loading | done
 
 export interface RangeLoaderOpts {
-  /** Eşzamanlı range isteği tavanı (mobil 1, masaüstü 2). */
+  /** Eşzamanlı range isteği tavanı (mobil 2, masaüstü 3). */
   concurrency?: number;
   /** Bellekte tutulan chunk byte tavanı (mobil ~24MB, masaüstü ~64MB). */
   maxBytes?: number;
@@ -41,11 +46,13 @@ export class RangeLoader {
   private stopped = false;
   private suspended = false; // bölüm inactive / sekme gizli: head dışı istek yok
   private priorityByte = 0;
+  private dir = 1; // hareket yönü: pickNext ileri tarafı tercih eder
   private heavyChunks = new Set<number>(); // yalnızca sıralama önceliği — indirme başlatmaz
   private headChunks = 0;
   private attempts: number[] = [];
   private fullBody = false; // 200-full: tek gövde görünümleri, evict edilmez
-  private allowed: Set<number> | null = null; // aktif playhead+target penceresi (head hariç)
+  private fillEnabled = false; // boşta arka plan doldurma (enableFill)
+  private filling = new Set<number>(); // doldurma amaçlı in-flight chunk'lar — iptal edilmez
   private activeKey = '';
   /** Teşhis sayaçları */
   staleAborts = 0;
@@ -114,10 +121,6 @@ export class RangeLoader {
     }
   }
 
-  setPriorityByte(offset: number) {
-    this.priorityByte = offset;
-  }
-
   /** Belirli bir byte aralığını en öne al (starve eden sample için). */
   bump(offset: number) {
     this.priorityByte = offset;
@@ -145,36 +148,55 @@ export class RangeLoader {
     }
   }
 
-  /** Aktif pencere güncellemesi: playhead + hedef byte offset'leri → chunk ± radius.
-   *  wanted append-only BÜYÜMEZ: pencere değişince eski hedeflere ait bekleyen
-   *  talepler silinir ve pencere dışı in-flight istekler iptal edilir.
-   *  Pencere anlamlı biçimde değişmedikçe (chunk merkezleri aynıysa) hiçbir şey
-   *  yeniden kurulmaz — kare başına Set üretimi yok. */
-  updateActiveWindow(offsets: number[], radius = 2) {
+  /** Aktif pencere: [from, to) byte aralıkları. Aralıklardaki tüm chunk'lar indirme
+   *  listesine girer (prefetch); pencere dışına düşen bekleyen talepler silinir ve
+   *  in-flight istekler iptal edilir (head/gate hariç). Chunk kümesi değişmedikçe
+   *  yalnızca öncelik güncellenir — kare başına Set üretimi yok. */
+  setWindow(ranges: Array<[number, number]>, priorityByte: number, dir: number) {
     if (this.chunkCount === 0) return;
-    const centers = offsets.map((o) => Math.floor(o / CHUNK_SIZE));
-    const key = centers.join(',');
+    this.priorityByte = priorityByte;
+    this.dir = dir < 0 ? -1 : 1;
+    const spans = ranges.map(([a, b]) => [
+      Math.max(0, Math.floor(a / CHUNK_SIZE)),
+      Math.min(this.chunkCount - 1, Math.floor((Math.max(a + 1, b) - 1) / CHUNK_SIZE)),
+    ]);
+    const key = spans.map(([a, b]) => a + '-' + b).join(',');
     if (key === this.activeKey) return;
     this.activeKey = key;
     const allowed = new Set<number>();
-    for (const c of centers) {
-      for (let d = -radius; d <= radius; d++) {
-        const i = c + d;
-        if (i >= 0 && i < this.chunkCount) allowed.add(i);
-      }
-    }
-    this.allowed = allowed;
-    // 1) Eski hedef pencerelerine ait bekleyen (henüz başlamamış) talepleri temizle
+    for (const [a, b] of spans) for (let c = a; c <= b; c++) allowed.add(c);
+    // Pencereye ≤ABORT_SLACK chunk uzaklıktaki in-flight istekler tamamlansın: fling
+    // sırasında pencere her karede kayar; hepsini iptal etmek hiçbir chunk'ın inmemesi demek.
+    // Bunlar wanted'da KALIR — aksi halde abortStale onları "istenmiyor" diye keser.
+    const ABORT_SLACK = 2;
+    const near = (c: number) => spans.some(([a, b]) => c >= a - ABORT_SLACK && c <= b + ABORT_SLACK);
     for (const c of [...this.wanted]) {
-      if (c >= this.headChunks && !allowed.has(c)) this.wanted.delete(c);
+      if (c < this.headChunks || allowed.has(c)) continue;
+      if (this.inFlight.has(c) && near(c)) continue;
+      this.wanted.delete(c);
     }
-    // 2) Eski hedefe ait in-flight istekleri iptal et (head/gate hariç)
     for (const [c, ctrl] of this.inFlight) {
-      if (c >= this.headChunks && !allowed.has(c)) {
-        ctrl.abort();
-        this.staleAborts++;
-      }
+      if (c < this.headChunks || allowed.has(c) || near(c) || this.filling.has(c)) continue;
+      ctrl.abort();
+      this.staleAborts++;
     }
+    if (this.suspended) return;
+    for (const c of allowed) if (this.states[c] === 0) this.wanted.add(c);
+    if (this.wanted.size > this.wantedMax) this.wantedMax = this.wanted.size;
+    this.pump();
+  }
+
+  /** Boşta arka plan doldurma: acil/pencere talebi yokken bağlantı boşta kalmasın,
+   *  dosyanın geri kalanı (önce hareket yönü) indirilsin. Yalnızca dosya bellek tavanına
+   *  TAMAMEN sığıyorsa açılır — aksi halde LRU tahliyesiyle sonsuz indirme döngüsü olur.
+   *  Acil talepler için her zaman bir bağlantı boş bırakılır. */
+  enableFill(on: boolean) {
+    this.fillEnabled = on && !this.fullBody && this.totalSize > 0 && this.totalSize <= this.maxBytes;
+    if (this.fillEnabled) this.pump();
+  }
+
+  get fillActive(): boolean {
+    return this.fillEnabled;
   }
 
   /** Bölüm inactive veya sekme gizli: yeni istek başlatma, head dışı bekleyen
@@ -182,6 +204,7 @@ export class RangeLoader {
   suspend() {
     if (this.suspended) return;
     this.suspended = true;
+    this.activeKey = ''; // dönüşte pencere yeniden kurulsun
     for (const c of [...this.wanted]) {
       if (c >= this.headChunks) this.wanted.delete(c);
     }
@@ -305,14 +328,15 @@ export class RangeLoader {
     const priChunk = Math.floor(this.priorityByte / CHUNK_SIZE);
     for (const [c, ctrl] of this.inFlight) {
       if (c < this.headChunks) continue;
-      if (this.wanted.has(c)) continue;
+      if (this.wanted.has(c) || this.filling.has(c)) continue;
       if (Math.abs(c - priChunk) <= 2) continue;
       ctrl.abort(); // catch tarafında state 0'a döner, hata sayılmaz
+      this.staleAborts++;
     }
   }
 
-  /** Sıradaki chunk: kapı bölgesi → istek listesinde playhead'e en yakın olan
-   *  (eşitlikte ağır bölge üyesi öne alınır). Otomatik lineer dolgu YOK. */
+  /** Sıradaki chunk: kapı bölgesi → istek listesinde playhead'e en yakın olan;
+   *  hareket yönündeki taraf avantajlı (eşitlikte ağır bölge üyesi öne alınır). */
   private pickNext(): number {
     for (let c = 0; c < this.headChunks; c++) {
       if (this.states[c] === 0) return c;
@@ -322,14 +346,29 @@ export class RangeLoader {
     let bestScore = Infinity;
     for (const c of this.wanted) {
       if (this.states[c] !== 0) continue;
-      // playhead-ilerisi hafif avantajlı: geriye olan mesafe %25 cezalı
-      const d = c >= priChunk ? c - priChunk : (priChunk - c) * 1.25;
+      // hareket yönü avantajlı: ters taraftaki mesafe 2× cezalı
+      const rel = (c - priChunk) * this.dir;
+      const d = rel >= 0 ? rel : -rel * 2;
       const score = d - (this.heavyChunks.has(c) ? 0.5 : 0);
       if (score < bestScore) {
         bestScore = score;
         best = c;
       }
     }
+    if (best >= 0 || !this.fillEnabled || this.suspended) return best;
+    // Boşta doldurma: talep yok → playhead'e en yakın inmemiş chunk (yön avantajlı),
+    // acil talepler için bir bağlantı boş kalır.
+    if (this.concurrency > 1 && this.filling.size >= this.concurrency - 1) return -1;
+    for (let c = 0; c < this.chunkCount; c++) {
+      if (this.states[c] !== 0) continue;
+      const rel = (c - priChunk) * this.dir;
+      const score = rel >= 0 ? rel : -rel * 2;
+      if (score < bestScore) {
+        bestScore = score;
+        best = c;
+      }
+    }
+    if (best >= 0) this.filling.add(best);
     return best;
   }
 
@@ -366,6 +405,7 @@ export class RangeLoader {
         })
         .finally(() => {
           this.inFlight.delete(c);
+          this.filling.delete(c);
           if (!this.stopped) this.pump();
         });
     }
