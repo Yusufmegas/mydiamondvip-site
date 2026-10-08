@@ -50,10 +50,12 @@ export class FallbackEngine {
 
   private caps: CapProfile;
   private mobile: boolean;
+  private landscapeStage: boolean;
 
-  constructor(baseUrl = '/fallback', opts: { mobile?: boolean } = {}) {
+  constructor(baseUrl = '/fallback', opts: { mobile?: boolean; landscapeStage?: boolean } = {}) {
     this.baseUrl = baseUrl;
     this.mobile = !!opts.mobile;
+    this.landscapeStage = !!opts.landscapeStage;
     this.caps = this.mobile ? MOBILE_CAPS : DESKTOP_CAPS;
   }
 
@@ -182,6 +184,10 @@ export class FallbackEngine {
     const bmp = this.cache.get(i);
     if (!bmp || !this.ctx || !this.canvas) return;
     const cw = this.canvas.width, ch = this.canvas.height;
+    if (this.landscapeStage) {
+      this.ctx.drawImage(bmp, 0, 0, cw, ch);
+      return;
+    }
     const { x, y } = objectPositionAt((i - 1) * FB_FPS_DIV, this.mobile);
     const scale = Math.max(cw / bmp.width, ch / bmp.height);
     const sw = cw / scale, sh = ch / scale;
