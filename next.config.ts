@@ -26,15 +26,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "25mb",
     },
   },
-  async rewrites() {
-    // Önizlemede film URL'si aynı origin'den akmalı; yerel codec varsa önce o servis edilir.
-    return {
-      fallback: ([540, 720, 1080] as const).map((size) => ({
-        source: `/codec/film-${size}.mp4`,
-        destination: `https://media.mydiamondvip.com/film/v3/film-${size}.mp4`,
-      })),
-    };
-  },
   async headers() {
     // /codec ve /fallback immutable — unutulursa CDN her Range isteğini
     // origin'e revalidate eder → stall patlaması (spec §1.6)
