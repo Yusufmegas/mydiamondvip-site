@@ -1,5 +1,5 @@
 // Hizmet içerikleri — her kayıt bir landing page besler (app/hizmetler/[...]).
-// Görseller: public/images/services/<slug>.png (gerçek atölye görselleri);
+// Görseller: public/images/services/<slug>.webp (gerçek atölye görselleri);
 // güncellemek için yalnızca dosyayı değiştirin, kod ve data aynı kalır.
 
 export interface Faq {
@@ -40,7 +40,7 @@ export interface Service {
 
 // Gerçek atölye görselleri PNG (masaüstü "Vip design görseller" setinden);
 // henüz gerçek görseli olmayan hizmetler film karesi (webp) kullanır.
-const img = (slug: string, ext: 'png' | 'webp' = 'png') => `/images/services/${slug}.${ext}`;
+const img = (slug: string) => `/images/services/${slug}.webp`;
 
 export const services: Service[] = [
   {
@@ -228,7 +228,7 @@ export const services: Service[] = [
       'Transporter, Caravelle ve Multivan için araca özel kalıplanmış panel, döşeme ve aydınlatma mimarisi.',
     intro:
       'Volkswagen ticari ailesi, doğru kabin planı ve premium malzeme diliyle VIP sınıfına taşınır. MyDiamondVIP; T5’ten T7’ye tüm platformlarda koltuk, döşeme, aydınlatma ve multimedya dönüşümlerini araca özel kalıplarla uygular.',
-    image: img('volkswagen-vip-dizayn', 'webp'),
+    image: img('volkswagen-vip-dizayn'),
     vehicles: ['VW Transporter', 'VW Caravelle', 'VW Multivan'],
     scope: [
       'VIP koltuk düzeni ve premium döşeme',

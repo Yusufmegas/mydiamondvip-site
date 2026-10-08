@@ -11,7 +11,15 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrubEngine, type EngineStats } from '@/lib/scrubEngine';
 import { FallbackEngine } from '@/lib/fallbackEngine';
-import { LAST_FRAME, STOP_FRAMES, FILM_VH_DESKTOP, FILM_VH_MOBILE, frameFromScroll } from '@/lib/timeline';
+import {
+  LAST_FRAME,
+  STOP_FRAMES,
+  FILM_VH_DESKTOP,
+  FILM_VH_MOBILE,
+  DEFAULT_DECODE_MODE,
+  type DecodeMode,
+  frameFromScroll,
+} from '@/lib/timeline';
 import { FILM_1080_URL, FILM_720_URL, FILM_540_URL } from '@/lib/filmSources';
 import Gate from './Gate';
 import Overlays, { updateOverlays } from './Overlays';
@@ -202,10 +210,12 @@ export default function FilmSection() {
       };
 
       if (await ScrubEngine.supported()) {
-        // Yazılım decode varsayılan; ?hw=1 donanım decoder'ını dener (teşhis)
-        const preferHardware = new URLSearchParams(location.search).has('hw');
+        // Decode modu: DEFAULT_DECODE_MODE; ?hw=1 donanımı, ?hw=0 yazılımı zorlar (otomatik geçiş kapalı)
+        const hwParam = new URLSearchParams(location.search).get('hw');
+        const forceMode = hwParam === '0' || hwParam === '1';
+        const decodeMode: DecodeMode = hwParam === '1' ? 'hw' : hwParam === '0' ? 'sw' : DEFAULT_DECODE_MODE;
         // Save-Data'da boşta arka plan doldurma kapalı (yalnızca görülen bölüm + prefetch iner)
-        const se = new ScrubEngine(url, { preferHardware, mobile: isCoarse, backgroundFill: !saveData });
+        const se = new ScrubEngine(url, { decodeMode, forceMode, mobile: isCoarse, backgroundFill: !saveData });
         se.onFatal = (err) => { if (!disposed) void useFallback(err); };
         try {
           await startEngine(se);

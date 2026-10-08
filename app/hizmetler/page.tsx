@@ -18,7 +18,7 @@ export default function Page() {
         kicker="Hizmetler"
         title="Aracınız İçin Uçtan Uca Tasarım"
         lead="İç mimariden koltuk sistemlerine, deri işçiliğinden akıllı kabin teknolojilerine kadar tüm dönüşüm tek ekip tarafından yönetilir. Her hizmetin detay sayfasında kapsam, malzeme sınıfları ve uygulama süreci ayrı ayrı anlatılır."
-        image="/images/services/vip-arac-dizayni.png"
+        image="/images/services/vip-arac-dizayni.webp"
       />
 
       {/* 1 — Sekiz ana hizmet: editorial pillar grid */}

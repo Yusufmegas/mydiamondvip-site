@@ -13,7 +13,8 @@ export default function ProfChip({ statsRef }: { statsRef: MutableRefObject<Engi
       const s = statsRef.current;
       if (!s || !elRef.current) return;
       elRef.current.textContent =
-        `${s.mode} ${s.state} ${s.accel}\n` +
+        `${s.mode} ${s.state}\n` +
+        `decode ${s.accel} · ${s.accelReason}\n` +
         `frame  ${s.drawnFrame} → ${s.targetFrame} (gap ${s.gap.toFixed(0)})\n` +
         `gop    ${s.gop}  hold ${(s.holdMs / 1000).toFixed(1)}s\n` +
         `stalls ${s.stalls}  maxGap ${s.maxGapMs.toFixed(0)}ms\n` +

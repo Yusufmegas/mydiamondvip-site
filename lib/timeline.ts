@@ -36,6 +36,13 @@ export const PREFETCH_FRAMES = 240;
 // Hareket yönünde önden decode edilen kare sayısı (GOP sınırına yuvarlanır).
 export const DECODE_AHEAD_FRAMES = 24;
 
+// ---- Decode modu ----
+// 'hw': donanım decoder'ı; hata / watchdog reset'i / asılı flush'ta o oturum için
+// otomatik 'sw'ye geçilir. 'sw': doğrudan yazılım decode. Gerçek cihaz testine göre
+// tersine çevirmek için yalnızca bu satırı değiştirin. ?hw=1 / ?hw=0 modu zorlar.
+export type DecodeMode = 'hw' | 'sw';
+export const DEFAULT_DECODE_MODE: DecodeMode = 'hw';
+
 // ---- Bölümler (spec §7) ----
 export interface Section {
   id: string;

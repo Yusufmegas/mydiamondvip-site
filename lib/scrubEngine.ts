@@ -23,6 +23,8 @@ import {
   JUMP_THRESHOLD,
   PREFETCH_FRAMES,
   DECODE_AHEAD_FRAMES,
+  DEFAULT_DECODE_MODE,
+  type DecodeMode,
   objectPositionAt,
 } from './timeline';
 
@@ -60,8 +62,10 @@ export interface EngineStats {
   jumps: number;
   /** Sert kurtarma sayısı: watchdog decoder'ı kaç kez yeniden kurdu */
   resets: number;
-  /** Donanım hızlandırma tercihi: auto | sw */
+  /** Aktif decode modu: hw | sw (zorlandıysa "(zorla)") */
   accel: string;
+  /** Modun sebebi: varsayılan, ?hw= zorlaması ya da otomatik geçiş nedeni */
+  accelReason: string;
   /** Kare hazır olmadığı için playhead'in beklediği toplam süre (ms) */
   holdMs: number;
   /** En büyük GOP uzunluğu (1 = all-intra) */
@@ -103,7 +107,9 @@ export class ScrubEngine {
   private gopsInFlight = new Set<number>(); // decoder'daki GOP'lar (keyframe index'i)
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
   private flushing = false;   // flush sürerken decode submit edilmez
-  private preferSoftware = true;
+  private preferSoftware = false;
+  private forcedMode = false;   // ?hw=0/1: otomatik geçiş yok (teşhis)
+  private flushTimeouts = 0;
 
   private playhead = 0;  // yumuşatılmış konum (kesirli kare)
   private anchor = 0;    // ulaşılmak istenen tam kare: çizilen kare ya da atlama hedefi
@@ -121,7 +127,7 @@ export class ScrubEngine {
   stats: EngineStats = {
     state: 'boot', stalls: 0, maxGapMs: 0, boost: 1, gap: 0, cacheSize: 0,
     inFlight: 0, netPct: 0, drawnFrame: -1, targetFrame: 0, mode: 'codec',
-    reqCenters: '-', reqLast: '-', flushes: 0, jumps: 0, resets: 0, accel: 'auto',
+    reqCenters: '-', reqLast: '-', flushes: 0, jumps: 0, resets: 0, accel: '-', accelReason: '-',
     holdMs: 0, gop: 1,
     netMB: 0, residentMB: 0, peakResidentMB: 0,
     wantedNow: 0, wantedMax: 0, staleAborts: 0, netInFlight: 0, netInFlightMax: 0,
@@ -136,7 +142,10 @@ export class ScrubEngine {
 
   private backgroundFill: boolean;
 
-  constructor(url: string, opts: { preferHardware?: boolean; mobile?: boolean; backgroundFill?: boolean } = {}) {
+  constructor(
+    url: string,
+    opts: { decodeMode?: DecodeMode; forceMode?: boolean; mobile?: boolean; backgroundFill?: boolean } = {},
+  ) {
     this.mobile = !!opts.mobile;
     this.backgroundFill = opts.backgroundFill ?? true;
     this.cacheCap = this.mobile ? CACHE_CAP_MOBILE : CACHE_CAP_DESKTOP;
@@ -145,11 +154,13 @@ export class ScrubEngine {
       concurrency: this.mobile ? 2 : 3,
       maxBytes: (this.mobile ? 24 : 64) * 1024 * 1024,
     });
-    // Varsayılan yazılım decode: GOP'lu scrub'da ~40 VideoFrame tutulur; donanım decoder'ının
-    // sabit kare havuzu bu yükte çıktı vermeyi bırakıyor (flush asılı → watchdog reset).
-    // ?hw=1 teşhis yolu donanımı dener.
-    this.preferSoftware = !opts.preferHardware;
-    this.stats.accel = this.preferSoftware ? 'sw' : 'auto';
+    // GOP'lu scrub'da ~40 VideoFrame tutulur; bazı donanım decoder'larının sabit kare
+    // havuzu bu yükte çıktı vermeyi bırakıyor → fallbackToSoftware (DEFAULT_DECODE_MODE).
+    const mode = opts.decodeMode ?? DEFAULT_DECODE_MODE;
+    this.preferSoftware = mode === 'sw';
+    this.forcedMode = !!opts.forceMode;
+    this.stats.accel = mode + (this.forcedMode ? ' (zorla)' : '');
+    this.stats.accelReason = this.forcedMode ? `?hw=${mode === 'hw' ? 1 : 0}` : 'varsayılan';
   }
 
   attach(canvas: HTMLCanvasElement) {
@@ -308,7 +319,8 @@ export class ScrubEngine {
       // Yazılım decoder'ı olmayan tarayıcı (ör. Safari/VideoToolbox): donanıma düş
       config = { ...config, hardwareAcceleration: 'no-preference' };
       support = await VideoDecoder.isConfigSupported(config);
-      this.stats.accel = 'hw(sw yok)';
+      this.stats.accel = 'hw';
+      this.stats.accelReason = 'yazılım decoder yok';
     }
     if (!support.supported) throw new Error('codec unsupported: ' + config.codec);
     this.decoder = new VideoDecoder({
@@ -350,7 +362,18 @@ export class ScrubEngine {
     this.evict();
   }
 
+  /** Donanımdan yazılıma oturumluk geçiş. Zorlanmış modda ya da zaten yazılımdaysa no-op. */
+  private fallbackToSoftware(reason: string): boolean {
+    if (this.preferSoftware || this.forcedMode) return false;
+    this.preferSoftware = true;
+    this.stats.accel = 'sw';
+    this.stats.accelReason = 'otomatik: ' + reason;
+    console.warn('[film] donanım decode → yazılım:', reason);
+    return true;
+  }
+
   private onDecoderError(e: Error) {
+    this.fallbackToSoftware('decoder hatası (' + e.message.slice(0, 60) + ')');
     this.decoderErrors++;
     this.decoderReady = false;
     this.inFlight.clear();
@@ -473,6 +496,10 @@ export class ScrubEngine {
         if (this.flushing) {
           console.warn('[film] flush 250ms içinde çözülmedi — submit kapısı zorla açıldı');
           this.flushing = false;
+          // Donanımda tekrarlayan asılı flush = belirgin takılma → yazılıma geç
+          if (++this.flushTimeouts >= 2 && !this.preferSoftware && !this.forcedMode) {
+            void this.recover('flush 2× asılı');
+          }
         }
       }, 250);
       this.decoder.flush()
@@ -519,11 +546,7 @@ export class ScrubEngine {
     }
     // Eskalasyon: BİR KEZ asılan donanım decoder'ına ikinci şans yok — sürekli yük
     // altında GPU/renderer çökmesine kadar gidebiliyor (gerçek cihazda görüldü).
-    if (!this.preferSoftware) {
-      this.preferSoftware = true;
-      this.stats.accel = 'sw(auto)';
-      console.warn('[film] kurtarma sonrası prefer-software\'e geçiş');
-    }
+    this.fallbackToSoftware(reason);
     try {
       await this.initDecoder();
       this.lastOutputAt = performance.now();

@@ -14,6 +14,8 @@ export const FILM_1080_URL =
 export const FILM_720_URL =
   process.env.NEXT_PUBLIC_FILM_720_URL || '/codec/film-720.mp4';
 
-// Telefon / Save-Data varyantı
+// Telefon / Save-Data varyantı. Production'da 540 tanımlı değilse (ör. henüz 540
+// yüklenmemiş v2 kurulumu) 720'ye düşer — yerel /codec/film-540.mp4'e değil (404 olurdu).
 export const FILM_540_URL =
-  process.env.NEXT_PUBLIC_FILM_540_URL || '/codec/film-540.mp4';
+  process.env.NEXT_PUBLIC_FILM_540_URL ||
+  (process.env.NEXT_PUBLIC_FILM_720_URL ? FILM_720_URL : '/codec/film-540.mp4');
