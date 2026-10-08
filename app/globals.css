@@ -552,9 +552,7 @@ html.menu-open { overflow: hidden; }
 .film-section.film-reduced .film-poster { opacity: 1; visibility: visible; }
 .film-canvas { z-index: 2; }
 
-/* Keep the film's portrait crop proportional on phones. A full-height canvas
-   makes the 16:9 footage appear stretched when its bitmap and CSS box diverge
-   during mobile browser chrome resizing. */
+/* Mobilde 16:9 kaynak, oranı korunarak 9:16 kadraja kırpılır. */
 @media (max-width: 700px) {
   .film-sticky {
     background: radial-gradient(ellipse at center, #25201e 0%, var(--bg) 72%);
@@ -565,9 +563,9 @@ html.menu-open { overflow: hidden; }
     inset: auto;
     left: 50%;
     top: 50%;
-    width: min(100vw, 75dvh);
-    height: min(100vw, 75dvh);
-    aspect-ratio: 1;
+    width: min(100vw, 50.625dvh);
+    height: min(177.7778vw, 90dvh);
+    aspect-ratio: 9 / 16;
     transform: translate(-50%, -50%);
   }
 }

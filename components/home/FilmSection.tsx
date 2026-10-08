@@ -107,7 +107,7 @@ export default function FilmSection() {
     const dpr = isCoarse
       ? (isPhone ? 1 : Math.min(1.25, window.devicePixelRatio || 1))
       : Math.min(2, window.devicePixelRatio || 1);
-    // Tampon boyutu canvas'ın gerçek CSS kutusundan alınır. Mobilde sahne kare;
+    // Tampon boyutu canvas'ın gerçek CSS kutusundan alınır. Mobilde sahne 9:16;
     // Safari adres çubuğu açılıp kapanırken bitmap ve görünen kutu aynı oranda kalır.
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
