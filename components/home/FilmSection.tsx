@@ -91,28 +91,29 @@ export default function FilmSection() {
     let snapping = false;
 
     setProf(new URLSearchParams(location.search).has('prof'));
+    const isPhone = window.matchMedia('(max-width: 700px)').matches;
+    section.classList.toggle('film-landscape-stage', isPhone);
 
     // Erişilebilirlik: hareket azaltma tercihinde film yerine statik poster
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setReduced(true);
       flog('film: prefers-reduced-motion → statik poster');
-      return;
+      return () => section.classList.remove('film-landscape-stage');
     }
 
     // Cihaz profili: dokunmatik/coarse cihazlarda Lenis yok, DPR düşük, mobil decode profili
     const isCoarse =
       window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(max-width: 900px)').matches;
-    const isPhone = window.matchMedia('(max-width: 700px)').matches;
     // Canvas DPR: telefon 1 · tablet ≤1.25 · masaüstü ≤2 (mevcut davranış)
     const dpr = isCoarse
       ? (isPhone ? 1 : Math.min(1.25, window.devicePixelRatio || 1))
       : Math.min(2, window.devicePixelRatio || 1);
-    // Tampon boyutu canvas'ın gerçek CSS kutusundan alınır. Mobilde tam ekran sahne;
-    // Safari adres çubuğu açılıp kapanırken bitmap ve görünen kutu aynı oranda kalır.
+    // Telefonda 960×540 yatay tampon CSS ile orantılı büyütülür. Safari'nin
+    // dikey canvas tamponunu esnetmesi kaynak görüntünün oranını bozamaz.
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      const bw = Math.max(1, Math.round(rect.width * dpr));
-      const bh = Math.max(1, Math.round(rect.height * dpr));
+      const bw = isPhone ? 960 : Math.max(1, Math.round(rect.width * dpr));
+      const bh = isPhone ? 540 : Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width === bw && canvas.height === bh) return;
       canvas.width = bw;
       canvas.height = bh;
@@ -198,7 +199,7 @@ export default function FilmSection() {
       const useFallback = async (why: unknown) => {
         console.warn('[film] codec yolu düştü, WebP fallback devrede:', why);
         engine?.destroy();
-        const fb = new FallbackEngine('/fallback', { mobile: isCoarse });
+        const fb = new FallbackEngine('/fallback', { mobile: isCoarse, landscapeStage: isPhone });
         fb.onFatal = (err) => console.error('[film] FATAL: fallback motoru da öldü:', err);
         try {
           await startEngine(fb);
@@ -213,7 +214,7 @@ export default function FilmSection() {
         const forceMode = hwParam === '0' || hwParam === '1';
         const decodeMode: DecodeMode = hwParam === '1' ? 'hw' : hwParam === '0' ? 'sw' : DEFAULT_DECODE_MODE;
         // Save-Data'da boşta arka plan doldurma kapalı (yalnızca görülen bölüm + prefetch iner)
-        const se = new ScrubEngine(url, { decodeMode, forceMode, mobile: isCoarse, backgroundFill: !saveData });
+        const se = new ScrubEngine(url, { decodeMode, forceMode, mobile: isCoarse, landscapeStage: isPhone, backgroundFill: !saveData });
         se.onFatal = (err) => { if (!disposed) void useFallback(err); };
         try {
           await startEngine(se);
@@ -304,6 +305,7 @@ export default function FilmSection() {
       lenis?.destroy();
       engine?.destroy();
       section.classList.remove('gate-open');
+      section.classList.remove('film-landscape-stage');
     };
   }, []);
 

@@ -552,6 +552,17 @@ html.menu-open { overflow: hidden; }
 .film-section.film-reduced .film-poster { opacity: 1; visibility: visible; }
 .film-canvas { z-index: 2; }
 
+/* Telefonda yatay film karesi kendi oranında kalır; sticky alan yanlardan kırpar. */
+.film-landscape-stage .film-canvas,
+.film-landscape-stage .film-poster {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  width: max(100vw, 177.7778dvh);
+  height: max(56.25vw, 100dvh);
+  transform: translate(-50%, -50%);
+}
+
 .film-hint {
   position: absolute;
   left: 50%;

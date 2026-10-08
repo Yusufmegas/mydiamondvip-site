@@ -138,15 +138,17 @@ export class ScrubEngine {
   onFatal: (err: Error) => void = () => {};
 
   private mobile: boolean;
+  private landscapeStage: boolean;
   private cacheCap: number;
 
   private backgroundFill: boolean;
 
   constructor(
     url: string,
-    opts: { decodeMode?: DecodeMode; forceMode?: boolean; mobile?: boolean; backgroundFill?: boolean } = {},
+    opts: { decodeMode?: DecodeMode; forceMode?: boolean; mobile?: boolean; landscapeStage?: boolean; backgroundFill?: boolean } = {},
   ) {
     this.mobile = !!opts.mobile;
+    this.landscapeStage = !!opts.landscapeStage;
     this.backgroundFill = opts.backgroundFill ?? true;
     this.cacheCap = this.mobile ? CACHE_CAP_MOBILE : CACHE_CAP_DESKTOP;
     // Mobil: eşzamanlı range 2 + ~24MB bellek tavanı; masaüstü: 3 + ~64MB
@@ -697,6 +699,12 @@ export class ScrubEngine {
     const frame = this.cache.get(idx);
     if (!frame || !this.ctx || !this.canvas) return;
     const cw = this.canvas.width, ch = this.canvas.height;
+    // Telefonda kaynak yatay tampona tam kare olarak çizilir; CSS yanları kırpar.
+    // Böylece Safari'nin dikey canvas yolundaki oran bozulması devre dışı kalır.
+    if (this.landscapeStage) {
+      this.ctx.drawImage(frame, 0, 0, cw, ch);
+      return;
+    }
     // Oran güvenliği: kaynağın GERÇEK görünür boyutu (coded/display farkına karşı)
     const vw = frame.displayWidth || this.videoW;
     const vh = frame.displayHeight || this.videoH;
