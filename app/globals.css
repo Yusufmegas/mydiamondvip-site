@@ -552,6 +552,26 @@ html.menu-open { overflow: hidden; }
 .film-section.film-reduced .film-poster { opacity: 1; visibility: visible; }
 .film-canvas { z-index: 2; }
 
+/* Keep the film's portrait crop proportional on phones. A full-height canvas
+   makes the 16:9 footage appear stretched when its bitmap and CSS box diverge
+   during mobile browser chrome resizing. */
+@media (max-width: 700px) {
+  .film-sticky {
+    background: radial-gradient(ellipse at center, #25201e 0%, var(--bg) 72%);
+  }
+
+  .film-canvas,
+  .film-poster {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    width: min(100vw, 75dvh);
+    height: min(100vw, 75dvh);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .film-hint {
   position: absolute;
   left: 50%;
